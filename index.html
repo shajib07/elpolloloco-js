@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Pollo Loco</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="landing-page">
+      <section class="card">
+        <h1>El Pollo Loco</h1>
+        <p class="subtitle">Build your jump-and-run step by step</p>
+
+        <div class="actions">
+          <button id="startButton">Start Game</button>
+          <button id="infoButton">How to Play</button>
+        </div>
+      </section>
+    </main>
+
+    <section id="gameScreen" class="game-screen hidden">
+      <div class="game-wrapper">
+        <div class="game-header">
+          <h2>El Pollo Loco</h2>
+          <div class="game-actions">
+            <button id="backButton">Back to Home</button>
+            <button id="restartButton" class="button-hidden">Restart</button>
+          </div>
+        </div>
+        <canvas id="gameCanvas" width="720" height="480"></canvas>
+      </div>
+    </section>
+
+    <div id="infoModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-content" role="dialog" aria-labelledby="infoTitle">
+        <button
+          id="closeModalButton"
+          class="close-btn"
+          aria-label="Close dialog"
+        >
+          X
+        </button>
+        <h2 id="infoTitle">How to Play</h2>
+        <ul>
+          <li>Use arrow keys to move left and right.</li>
+          <li>Press space to jump.</li>
+          <li>Avoid enemies and collect coins.</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="constants/World.const.js"></script>
+    <script src="constants/Screen.const.js"></script>
+    <script src="constants/InputKeys.const.js"></script>
+
+    <script src="classes/base/DrawableObject.class.js"></script>
+    <script src="classes/base/MovableObject.class.js"></script>
+    <script src="classes/base/Enemy.class.js"></script>
+    <script src="classes/helpers/SpriteAnimation.class.js"></script>
+
+    <script src="classes/Player.class.js"></script>
+    <script src="classes/Chicken.class.js"></script>
+    <script src="classes/ChickenNormal.class.js"></script>
+    <script src="classes/Coin.class.js"></script>
+    <script src="classes/Bottle.class.js"></script>
+    <script src="classes/ThrowableBottle.class.js"></script>
+    <script src="classes/Endboss.class.js"></script>
+    <script src="classes/World.class.js"></script>
+    <script src="classes/Game.class.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+const WORLD_CONFIG = Object.freeze({
+  WIDTH: 2400,
+  HEIGHT: 480,
+  CAMERA_FOLLOW_OFFSET: 0.45,
+});
