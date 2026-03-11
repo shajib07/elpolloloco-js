@@ -16,6 +16,6 @@ class DrawableObject {
   }
 
   isImageReady(image) {
-    image && image.complete && image.naturalWidth > 0;
+    return image && image.complete && image.naturalWidth > 0;
   }
 }

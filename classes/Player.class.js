@@ -63,7 +63,7 @@ class Player extends MovableObject {
     const maxX = worldWidth - this.width;
     this.x = Math.max(0, Math.min(this.x, maxX));
 
-    this.getCurrentAnimation.update();
+    this.getCurrentAnimation().update();
   }
 
   applyGravity() {
@@ -123,7 +123,7 @@ class Player extends MovableObject {
     }
 
     this.currentAnimation = nextAnimation;
-    this.getCurrentAnimation.reset();
+    this.getCurrentAnimation().reset();
   }
 
   takeHit(damage) {
@@ -158,4 +158,17 @@ class Player extends MovableObject {
       facingLeft: this.facingLeft,
     };
   }
+
+applyKnockback(fromX, worldWidth) {
+  const knockbackDistance = 30;
+
+  if (this.x < fromX) {
+    this.x -= knockbackDistance;
+  } else {
+    this.x += knockbackDistance;
+  }
+
+  const maxX = worldWidth - this.width;
+  this.x = Math.max(0, Math.min(this.x, maxX));
+}
 }

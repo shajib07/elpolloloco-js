@@ -41,10 +41,13 @@ class Game {
     this.endbossBarImages = this.loadEndbossBarImages();
 
     this.isGameWon = false;
+    this.isBossFightActive = false;
+
+    this.lastBossHitAt = 0;
+    this.bossHitCooldownMs = 800;
   }
 
   start() {
-    console.log("start");
     if (this.animationFrameId !== null) {
       return;
     }
@@ -53,7 +56,6 @@ class Game {
   }
 
   stop() {
-    console.log("stop");
     if (this.animationFrameId === null) {
       return;
     }
@@ -66,7 +68,6 @@ class Game {
     this.update();
     this.render();
 
-    console.log("loop ++");
     this.animationFrameId = requestAnimationFrame(() => this.loop());
   }
 
@@ -77,11 +78,17 @@ class Game {
 
     this.player.update(this.keys, this.world.width);
     this.world.updateCamera(this.player.x);
+    this.updateBossFightState();
 
     this.enemies.forEach((enemy) => enemy.update());
     this.recycleEnemies();
-    this.endboss.update(this.player.x);
+
+    if (this.isBossFightActive) {
+      this.endboss.update(this.player.x);
+    }
+
     this.checkPlayerEnemyCollisions();
+    this.checkPlayerBossCollision();
     this.checkCoinCollisions();
     this.checkBottleCollisions();
 
@@ -159,13 +166,40 @@ class Game {
       ) {
         enemy.kill();
         this.player.bounceAfterStomp();
-        console.log("after bounceAfgter");
         return;
       }
 
-      console.log("before takehit");
-      this.player.takeHit(20);
+      this.player.takeHit(COMBAT.ENEMY_DAMAGE);
     });
+  }
+
+  checkPlayerBossCollision() {
+    if (!this.isBossFightActive) {
+      return;
+    }
+
+    if (this.endboss.isDead) {
+      return;
+    }
+
+    const playerBounds = this.player.getBounds();
+    const bossBounds = this.endboss.getBounds();
+    const isColliding = this.areRectsOverlapping(playerBounds, bossBounds);
+
+    if (!isColliding) {
+      return;
+    }
+
+    const now = Date.now();
+    const isOnCooldown = now - this.lastBossHitAt < this.bossHitCooldownMs;
+
+    if (isOnCooldown) {
+      return;
+    }
+
+    this.player.takeHit(COMBAT.BOSS_DAMAGE);
+    this.player.applyKnockback(this.endboss.x, this.world.width);
+    this.lastBossHitAt = now;
   }
 
   isStompHit(playerBounds, enemyBounds) {
@@ -183,6 +217,13 @@ class Game {
       a.y < b.y + b.height &&
       a.y + a.height > b.y
     );
+  }
+
+  updateBossFightState() {
+    if (this.isBossFightActive) {
+      return;
+    }
+    this.isBossFightActive = this.player.x >= this.endboss.canvasActivationX;
   }
 
   checkCoinCollisions() {
@@ -421,13 +462,14 @@ class Game {
         return;
       }
 
-      if (!this.endboss.isDead) {
+      if (this.isBossFightActive && !this.endboss.isDead) {
         const bottleBounds = throwable.getBounds();
         const bossBounds = this.endboss.getBounds();
         const hitsBoss = this.areRectsOverlapping(bottleBounds, bossBounds);
 
         if (hitsBoss) {
-          this.endboss.takeHit(20);
+          this.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
+          this.endboss.applyKnockback(throwable.x)
           throwable.isFinished = true;
           return;
         }
@@ -478,18 +520,17 @@ class Game {
   }
 
   drawEndbossBar() {
-    const shouldShow = this.endboss.x < 1050 && !this.endboss.isDead;
-    if (!shouldShow) {
-      return;
-    }
-
-    const level = this.getEndbossBarLevel();
-    const image = this.endbossBarImages[level];
-
-    if (image && image.complete && image.naturalWidth > 0) {
-      this.context.drawImage(image, this.canvas.width - 240, 20, 200, 50);
-    }
+  if (!this.isBossFightActive || this.endboss.isDead) {
+    return;
   }
+
+  const level = this.getEndbossBarLevel();
+  const image = this.endbossBarImages[level];
+
+  if (image && image.complete && image.naturalWidth > 0) {
+    this.context.drawImage(image, this.canvas.width - 240, 30, 200, 50);
+  }
+}
 
   drawWinScreen() {
     if (this.winScreenImage.complete && this.winScreenImage.naturalWidth > 0) {

@@ -4,7 +4,7 @@ class Chicken extends Enemy {
     this.speed = 1.5;
     this.enemyType = "small";
 
-    this.walkFrames = ImageManager.load(IMAGE_PATHS.ENEMIES.CHICKEN_WALK);
+    this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.ENEMIES.CHICKEN_WALK);
     this.walkAnimation = new SpriteAnimation(this.walkFrames, 14);
     this.deadImage = ImageManager.load(IMAGE_PATHS.ENEMIES.CHICKEN_DEAD);
   }

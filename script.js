@@ -91,7 +91,6 @@ function showHomeScreen() {
   }
   restartButton.classList.add("button-hidden");
   setScreen(SCREEN.HOME);
-  console.log("show home screnn ++");
 }
 
 function handleRestartClick() {
@@ -107,7 +106,9 @@ function handleRestartClick() {
 }
 
 function handleGameOver(result) {
-  game.stop();
+  if (game) {
+    game.stop();
+  }
   if (!isGameScreenActive) {
     return;
   }

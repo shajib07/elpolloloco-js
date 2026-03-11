@@ -2,9 +2,8 @@ class ChickenNormal extends Enemy {
   constructor(x, y) {
     super(x,y, 80, 80)
     this.speed = 1.1;
-    this.isDead = false;
     this.enemyType = "normal";
-    this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.ENEMIES.CHICKEN_NORAML_WALK)
+    this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.ENEMIES.CHICKEN_NORMAL_WALK)
     this.walkAnimation = new SpriteAnimation(this.walkFrames, 16)
     this.deadImage = ImageManager.load(IMAGE_PATHS.ENEMIES.CHICKEN_NORMAL_DEAD)
   }
@@ -19,7 +18,7 @@ class ChickenNormal extends Enemy {
 
   draw(context) {
     if (this.isDead) {
-      showDeadImage();
+      this.showDeadImage(context);
       return;
     }
 
@@ -29,7 +28,7 @@ class ChickenNormal extends Enemy {
     }
   }
 
-  showDeadImage() {
+  showDeadImage(context) {
     if (this.isImageReady(this.deadImage)) {
       context.drawImage(
         this.deadImage,

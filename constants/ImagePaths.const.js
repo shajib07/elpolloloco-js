@@ -23,7 +23,7 @@ const IMAGE_PATHS = Object.freeze({
     ],
   },
   ENEMIES: {
-    CHICKEN_NORAML_WALK: [
+    CHICKEN_NORMAL_WALK: [
       "assets/img/enemies/chicken-normal-walk-1.png",
       "assets/img/enemies/chicken-normal-walk-2.png",
       "assets/img/enemies/chicken-normal-walk-3.png",
