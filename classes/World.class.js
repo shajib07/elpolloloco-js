@@ -7,8 +7,7 @@ class World {
     this.height = WORLD_CONFIG.HEIGHT;
 
     this.cameraX = 0;
-
-    this.backgroundImage = ImageManager.load(IMAGE_PATHS.WORLD.BACKGROUND)
+    this.backgroundImage = ImageManager.load(IMAGE_PATHS.WORLD.BACKGROUND);
   }
 
   updateCamera(playerX) {
@@ -46,7 +45,7 @@ class World {
     }
   }
 
-    drawGround() {
+  drawGround() {
     this.context.fillStyle = "#3a506b";
     this.context.fillRect(0, 420, this.width, 60);
   }

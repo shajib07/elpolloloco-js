@@ -4,17 +4,7 @@ class Endboss extends Enemy {
     this.speed = 0.8;
     this.enemyType = "boss";
 
-    this.walkFrames = [
-      "assets/img/boss/walk-1.png",
-      "assets/img/boss/walk-2.png",
-      "assets/img/boss/walk-3.png",
-      "assets/img/boss/walk-4.png",
-    ].map((path) => {
-      const image = new Image();
-      image.src = path;
-      return image;
-    });
-
+    this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.ENEMIES.BOSS_WALK)
     this.walkAnimation = new SpriteAnimation(this.walkFrames, 14)
     
     this.maxHealth = 100;

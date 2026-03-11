@@ -18,8 +18,8 @@ class Game {
     this.onGameOver = onGameOver;
     this.isGameOver = false;
 
-    this.loseScreenImage = new Image();
-    this.loseScreenImage.src = "assets/img/screens/you-lost.png";
+    this.loseScreenImage = ImageManager.load(IMAGE_PATHS.SCREENS.LOSE);
+    this.winScreenImage = ImageManager.load(IMAGE_PATHS.SCREENS.WIN);
 
     this.coins = [new Coin(500, 300)];
     this.collectedCoins = 0;
@@ -41,9 +41,6 @@ class Game {
     this.endbossBarImages = this.loadEndbossBarImages();
 
     this.isGameWon = false;
-
-    this.winScreenImage = new Image();
-    this.winScreenImage.src = "assets/img/screens/you-win.png";
   }
 
   start() {
@@ -152,7 +149,8 @@ class Game {
         return;
       }
 
-      const canBeStomped = enemy.enemyType === "small" || enemy.enemyType === "normal";
+      const canBeStomped =
+        enemy.enemyType === "small" || enemy.enemyType === "normal";
 
       if (
         canBeStomped &&

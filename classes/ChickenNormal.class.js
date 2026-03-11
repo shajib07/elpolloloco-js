@@ -3,22 +3,10 @@ class ChickenNormal extends Enemy {
     super(x,y, 80, 80)
     this.speed = 1.1;
     this.isDead = false;
-
-    this.walkFrames = [
-      "assets/img/enemies/chicken-normal-walk-1.png",
-      "assets/img/enemies/chicken-normal-walk-2.png",
-      "assets/img/enemies/chicken-normal-walk-3.png",
-    ].map((path) => {
-      const image = new Image();
-      image.src = path;
-      return image;
-    });
-
-    this.walkAnimation = new SpriteAnimation(this.walkFrames, 16)
     this.enemyType = "normal";
-
-    this.deadImage = new Image();
-    this.deadImage.src = "assets/img/enemies/chicken-normal-dead.png";
+    this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.ENEMIES.CHICKEN_NORAML_WALK)
+    this.walkAnimation = new SpriteAnimation(this.walkFrames, 16)
+    this.deadImage = ImageManager.load(IMAGE_PATHS.ENEMIES.CHICKEN_NORMAL_DEAD)
   }
 
   update() {

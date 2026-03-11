@@ -6,42 +6,9 @@ class Player extends MovableObject {
     super(80, 300, 90, 120);
     this.speed = 4;
 
-    this.idleFrames = [
-      "assets/img/character/idle-1.png",
-      "assets/img/character/idle-2.png",
-      "assets/img/character/idle-3.png",
-    ].map((path) => {
-      const image = new Image();
-      image.src = path;
-      return image;
-    });
-
-    this.walkFrames = [
-      "assets/img/character/walk-1.png",
-      "assets/img/character/walk-2.png",
-      "assets/img/character/walk-3.png",
-    ].map((path) => {
-      const img = new Image();
-      img.src = path;
-      return img;
-    });
-
-    this.jumpFrames = [
-      "assets/img/character/jump-1.png",
-      "assets/img/character/jump-2.png",
-      "assets/img/character/jump-3.png",
-      "assets/img/character/jump-4.png",
-      "assets/img/character/jump-5.png",
-      "assets/img/character/jump-6.png",
-      "assets/img/character/jump-7.png",
-      "assets/img/character/jump-8.png",
-      "assets/img/character/jump-9.png",
-    ].map((path) => {
-      const img = new Image();
-      img.src = path;
-      return img;
-    });
-
+    this.idleFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.IDLE);
+    this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.WALK);
+    this.jumpFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.JUMP);
     this.idleAnimation = new SpriteAnimation(this.idleFrames, 12);
     this.walkAnimation = new SpriteAnimation(this.walkFrames, 12);
     this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 12);
