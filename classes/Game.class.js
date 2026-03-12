@@ -91,16 +91,15 @@ class Game {
       this.endboss.update(this.player.x);
     }
 
-    this.checkPlayerEnemyCollisions();
-    this.checkPlayerBossCollision();
-    this.checkCoinCollisions();
-    this.checkBottleCollisions();
+    this.collisionSystem.checkPlayerEnemyCollisions();
+    this.collisionSystem.checkPlayerBossCollision();
+    this.collisionSystem.checkCoinCollisions();
+    this.collisionSystem.checkBottleCollisions();
+    this.collisionSystem.checkThrowableEnemyCollisions();
 
     this.handleThrowInput();
     this.updateThrowables();
-    this.checkThrowableEnemyCollisions();
     this.checkGameWin();
-
     this.checkGameOver();
   }
 
@@ -145,74 +144,6 @@ class Game {
     });
   }
 
-  checkPlayerEnemyCollisions() {
-    const playerBounds = this.player.getBounds();
-
-    this.enemies.forEach((enemy) => {
-      if (enemy.isDead) {
-        return;
-      }
-
-      const enemyBounds = enemy.getBounds();
-      const isColliding = this.areRectsOverlapping(playerBounds, enemyBounds);
-
-      if (!isColliding) {
-        return;
-      }
-
-      const canBeStomped =
-        enemy.enemyType === "small" || enemy.enemyType === "normal";
-
-      if (
-        canBeStomped &&
-        this.isStompHit(playerBounds, enemyBounds) &&
-        this.player.isFalling()
-      ) {
-        enemy.kill();
-        this.player.bounceAfterStomp();
-        return;
-      }
-
-      this.player.takeHit(COMBAT.ENEMY_DAMAGE);
-    });
-  }
-
-  checkPlayerBossCollision() {
-    if (!this.isBossFightActive) {
-      return;
-    }
-
-    if (this.endboss.isDead) {
-      return;
-    }
-
-    const playerBounds = this.player.getBounds();
-    const bossBounds = this.endboss.getBounds();
-    const isColliding = this.areRectsOverlapping(playerBounds, bossBounds);
-
-    if (!isColliding) {
-      return;
-    }
-
-    const now = Date.now();
-    const isOnCooldown = now - this.lastBossHitAt < this.bossHitCooldownMs;
-
-    if (isOnCooldown) {
-      return;
-    }
-
-    this.player.takeHit(COMBAT.BOSS_DAMAGE);
-    this.player.applyKnockback(this.endboss.x, this.world.width);
-    this.lastBossHitAt = now;
-  }
-
-  isStompHit(playerBounds, enemyBounds) {
-    const playerBottom = playerBounds.y + playerBounds.height;
-    const enemyTop = enemyBounds.y;
-    const stompWindow = 18;
-
-    return playerBottom <= enemyTop + stompWindow;
-  }
 
   updateBossFightState() {
     if (this.isBossFightActive) {
@@ -221,41 +152,6 @@ class Game {
     this.isBossFightActive = this.player.x >= this.endboss.canvasActivationX;
   }
 
-  checkCoinCollisions() {
-    const playerBounds = this.player.getBounds();
-
-    this.coins.forEach((coin) => {
-      if (coin.isCollected) {
-        return;
-      }
-
-      const coinBounds = coin.getBounds();
-      const isColliding = this.collisionSystem.areRectsOverlapping(playerBounds, coinBounds);
-
-      if (isColliding) {
-        coin.collect();
-        this.collectedCoins += 1;
-      }
-    });
-  }
-
-  checkBottleCollisions() {
-    const playerBounds = this.player.getBounds();
-
-    this.bottles.forEach((bottle) => {
-      if (bottle.isCollected) {
-        return;
-      }
-
-      const bottleBounds = bottle.getBounds();
-      const isColliding = this.collisionSystem.areRectsOverlapping(playerBounds, bottleBounds);
-
-      if (isColliding) {
-        bottle.collect();
-        this.collectedBottles += 1;
-      }
-    });
-  }
 
   checkGameWin() {
     if (this.isGameWon || this.isGameOver) {
@@ -333,47 +229,6 @@ class Game {
   updateThrowables() {
     this.throwables.forEach((bottle) => bottle.update(this.world.width));
     this.throwables = this.throwables.filter((bottle) => !bottle.isFinished);
-  }
-
-  checkThrowableEnemyCollisions() {
-    this.throwables.forEach((throwable) => {
-      if (throwable.isFinished) {
-        return;
-      }
-
-      if (this.isBossFightActive && !this.endboss.isDead) {
-        const bottleBounds = throwable.getBounds();
-        const bossBounds = this.endboss.getBounds();
-        const hitsBoss = this.collisionSystem.areRectsOverlapping(bottleBounds, bossBounds);
-
-        if (hitsBoss) {
-          this.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
-          this.endboss.applyKnockback(throwable.x);
-          throwable.isFinished = true;
-          return;
-        }
-      }
-
-      const bottleBounds = throwable.getBounds();
-
-      this.enemies.forEach((enemy) => {
-        if (enemy.isDead) {
-          return;
-        }
-
-        if (enemy.enemyType !== "normal") return;
-
-        const enemyBounds = enemy.getBounds();
-        const isColliding = this.collisionSystem.areRectsOverlapping(bottleBounds, enemyBounds);
-
-        if (!isColliding) {
-          return;
-        }
-
-        enemy.kill();
-        throwable.isFinished = true;
-      });
-    });
   }
 
   drawWinScreen() {

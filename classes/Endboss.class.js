@@ -1,7 +1,7 @@
 class Endboss extends Enemy {
   constructor(x, y) {
     super(x, y, 220, 280);
-    this.speed = 0.8;
+    this.speed = 2.5;
     this.enemyType = "boss";
 
     this.minX = 1500;
@@ -30,88 +30,80 @@ class Endboss extends Enemy {
       this.isHurt = false;
     }
 
-    // basic behavior: move only when player is near
-    let targetX = playerX;
+    const distanceToPlayer = playerX - this.x;
 
-    if (playerX < this.minX) {
-      targetX = this.minX;
-    } else if (playerX > this.maxX) {
-      targetX = this.maxX;
-    }
-
-    const distanceToTarget = targetX - this.x;
-    if (Math.abs(distanceToTarget) > 20) {
-      if (distanceToTarget < 0) {
+    if (Math.abs(distanceToPlayer) > 20) {
+      if (distanceToPlayer < 0) {
         this.x -= this.speed;
-        this.facingLeft = true;
       } else {
         this.x += this.speed;
-        this.facingLeft = false;
       }
     }
+
+    this.facingLeft = playerX < this.x;
 
     this.walkAnimation.update();
   }
 
-draw(context) {
-  const frame = this.walkAnimation.getCurrentFrame();
+  draw(context) {
+    const frame = this.walkAnimation.getCurrentFrame();
 
-  if (!this.isImageReady(frame)) {
-    return;
-  }
-
-  const drawHurtOverlay = () => {
-    if (!this.isHurt) {
+    if (!this.isImageReady(frame)) {
       return;
     }
 
-    context.save();
-    context.globalAlpha = 0.25;
-    context.fillStyle = "#ff0000";
-    context.fillRect(0, 0, this.width, this.height);
-    context.restore();
-  };
+    const drawHurtOverlay = () => {
+      if (!this.isHurt) {
+        return;
+      }
 
-  if (!this.facingLeft) {
-    context.save();
-    context.translate(this.x + this.width / 2, this.y + this.height / 2);
-    context.scale(-1, 1);
-
-    context.drawImage(
-      frame,
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height,
-    );
-
-    if (this.isHurt) {
       context.save();
       context.globalAlpha = 0.25;
       context.fillStyle = "#ff0000";
-      context.fillRect(
+      context.fillRect(0, 0, this.width, this.height);
+      context.restore();
+    };
+
+    if (!this.facingLeft) {
+      context.save();
+      context.translate(this.x + this.width / 2, this.y + this.height / 2);
+      context.scale(-1, 1);
+
+      context.drawImage(
+        frame,
         -this.width / 2,
         -this.height / 2,
         this.width,
         this.height,
       );
+
+      if (this.isHurt) {
+        context.save();
+        context.globalAlpha = 0.25;
+        context.fillStyle = "#ff0000";
+        context.fillRect(
+          -this.width / 2,
+          -this.height / 2,
+          this.width,
+          this.height,
+        );
+        context.restore();
+      }
+
       context.restore();
+      return;
     }
 
-    context.restore();
-    return;
-  }
+    context.drawImage(frame, this.x, this.y, this.width, this.height);
 
-  context.drawImage(frame, this.x, this.y, this.width, this.height);
-
-  if (this.isHurt) {
-    context.save();
-    context.globalAlpha = 0.25;
-    context.fillStyle = "#ff0000";
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.restore();
+    if (this.isHurt) {
+      context.save();
+      context.globalAlpha = 0.25;
+      context.fillStyle = "#ff0000";
+      context.fillRect(this.x, this.y, this.width, this.height);
+      context.restore();
+    }
   }
-}
 
   takeHit(damage) {
     const now = Date.now();
@@ -131,19 +123,18 @@ draw(context) {
     }
   }
 
-  applyKnockback(fromX) {
-    const knockbackDistance = 25;
+applyKnockback(fromX, worldWidth) {
+  const knockbackDistance = 30;
 
-    if (this.x < fromX) {
-      this.x -= knockbackDistance;
-      this.facingLeft = true;
-    } else {
-      this.x += knockbackDistance;
-      this.facingLeft = false;
-    }
-
-    this.x = Math.max(this.minX, Math.min(this.x, this.maxX));
+  if (this.x < fromX) {
+    this.x -= knockbackDistance;
+  } else {
+    this.x += knockbackDistance;
   }
+
+  const maxX = worldWidth - this.width;
+  this.x = Math.max(0, Math.min(this.x, maxX));
+}
 
   isActive() {
     return this.x < this.canvasActivationX;
