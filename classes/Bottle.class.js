@@ -1,12 +1,12 @@
-class Bottle extends DrawableObject{
+class Bottle extends DrawableObject {
   constructor(x, y) {
-    super(x,y, 56, 78)
+    super(x, y, 58, 88);
     this.isCollected = false;
 
-    this.image = ImageManager.load(IMAGE_PATHS.ITEMS.BOTTLE_GROUND)
+    this.image = ImageManager.load(IMAGE_PATHS.ITEMS.BOTTLE_GROUND);
   }
 
-draw(context) {
+  draw(context) {
     if (this.isCollected) {
       return;
     }

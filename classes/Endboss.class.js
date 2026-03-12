@@ -17,7 +17,7 @@ class Endboss extends Enemy {
     this.isHurt = false;
     this.hurtAt = 0;
     this.hurtDurationMs = 200;
-
+    this.patrolTargetX = this.maxX;
     this.canvasActivationX = 900;
   }
 
@@ -56,30 +56,60 @@ class Endboss extends Enemy {
 draw(context) {
   const frame = this.walkAnimation.getCurrentFrame();
 
-  if (this.isImageReady(frame)) {
-    if (!this.facingLeft) {
+  if (!this.isImageReady(frame)) {
+    return;
+  }
+
+  const drawHurtOverlay = () => {
+    if (!this.isHurt) {
+      return;
+    }
+
+    context.save();
+    context.globalAlpha = 0.25;
+    context.fillStyle = "#ff0000";
+    context.fillRect(0, 0, this.width, this.height);
+    context.restore();
+  };
+
+  if (!this.facingLeft) {
+    context.save();
+    context.translate(this.x + this.width / 2, this.y + this.height / 2);
+    context.scale(-1, 1);
+
+    context.drawImage(
+      frame,
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height,
+    );
+
+    if (this.isHurt) {
       context.save();
-      context.translate(this.x, this.y + this.height / 2);
-      context.scale(-1, 1);
-      context.drawImage(
-        frame,
+      context.globalAlpha = 0.25;
+      context.fillStyle = "#ff0000";
+      context.fillRect(
         -this.width / 2,
         -this.height / 2,
         this.width,
         this.height,
       );
       context.restore();
-    } else {
-      context.drawImage(frame, this.x, this.y, this.width, this.height);
     }
 
-    if (this.isHurt) {
-      context.save();
-      context.globalAlpha = 0.25;
-      context.fillStyle = "#ff0000";
-      context.fillRect(this.x, this.y, this.width, this.height);
-      context.restore();
-    }
+    context.restore();
+    return;
+  }
+
+  context.drawImage(frame, this.x, this.y, this.width, this.height);
+
+  if (this.isHurt) {
+    context.save();
+    context.globalAlpha = 0.25;
+    context.fillStyle = "#ff0000";
+    context.fillRect(this.x, this.y, this.width, this.height);
+    context.restore();
   }
 }
 
@@ -101,19 +131,19 @@ draw(context) {
     }
   }
 
-applyKnockback(fromX) {
-  const knockbackDistance = 25;
+  applyKnockback(fromX) {
+    const knockbackDistance = 25;
 
-  if (this.x < fromX) {
-    this.x -= knockbackDistance;
-    this.facingLeft = true;
-  } else {
-    this.x += knockbackDistance;
-    this.facingLeft = false;
+    if (this.x < fromX) {
+      this.x -= knockbackDistance;
+      this.facingLeft = true;
+    } else {
+      this.x += knockbackDistance;
+      this.facingLeft = false;
+    }
+
+    this.x = Math.max(this.minX, Math.min(this.x, this.maxX));
   }
-
-  this.x = Math.max(this.minX, Math.min(this.x, this.maxX));
-}
 
   isActive() {
     return this.x < this.canvasActivationX;

@@ -10,10 +10,10 @@ class Game {
     this.animationFrameId = null;
 
     this.world = new World(canvas);
+    this.hud = new HUD(this.context, this.canvas);
+    this.collisionSystem = new CollisionSystem(this);
 
     this.enemies = [new Chicken(620, 360), new ChickenNormal(980, 340)];
-
-    this.healthBarImages = this.loadHealthBarImages();
 
     this.onGameOver = onGameOver;
     this.isGameOver = false;
@@ -21,24 +21,28 @@ class Game {
     this.loseScreenImage = ImageManager.load(IMAGE_PATHS.SCREENS.LOSE);
     this.winScreenImage = ImageManager.load(IMAGE_PATHS.SCREENS.WIN);
 
-    this.coins = [new Coin(500, 300)];
+    this.coins = [
+      new Coin(500, 300),
+      new Coin(750, 260),
+      new Coin(980, 220),
+      new Coin(1250, 280),
+      new Coin(1600, 240),
+    ];
     this.collectedCoins = 0;
 
     this.maxCoins = this.coins.length;
-    this.coinBarImages = this.loadCoinBarImages();
 
-    this.bottles = [new Bottle(630, 342)];
+    const bottlePositions = [630, 900, 1180, 1460, 1720, 1980];
+    this.bottles = bottlePositions.map((x) => new Bottle(x, 342));
+
     this.collectedBottles = 0;
-
     this.maxBottles = this.bottles.length;
-    this.bottleBarImages = this.loadBottleBarImages();
 
     this.throwables = [];
     this.lastThrowAt = 0;
     this.throwCooldownMs = 350;
 
     this.endboss = new Endboss(1800, 150);
-    this.endbossBarImages = this.loadEndbossBarImages();
 
     this.isGameWon = false;
     this.isBossFightActive = false;
@@ -115,10 +119,10 @@ class Game {
 
     this.world.endRender();
 
-    this.drawEndbossBar();
-    this.drawBottleBar();
-    this.drawCoinBar();
-    this.drawHealthBar();
+    this.hud.drawEndbossBar(this.isBossFightActive, this.endboss);
+    this.hud.drawBottleBar(this.collectedBottles, this.maxBottles);
+    this.hud.drawCoinBar(this.collectedCoins, this.maxCoins);
+    this.hud.drawHealthBar(this.player.health);
 
     if (this.isGameWon) {
       this.drawWinScreen();
@@ -210,15 +214,6 @@ class Game {
     return playerBottom <= enemyTop + stompWindow;
   }
 
-  areRectsOverlapping(a, b) {
-    return (
-      a.x < b.x + b.width &&
-      a.x + a.width > b.x &&
-      a.y < b.y + b.height &&
-      a.y + a.height > b.y
-    );
-  }
-
   updateBossFightState() {
     if (this.isBossFightActive) {
       return;
@@ -235,7 +230,7 @@ class Game {
       }
 
       const coinBounds = coin.getBounds();
-      const isColliding = this.areRectsOverlapping(playerBounds, coinBounds);
+      const isColliding = this.collisionSystem.areRectsOverlapping(playerBounds, coinBounds);
 
       if (isColliding) {
         coin.collect();
@@ -253,87 +248,13 @@ class Game {
       }
 
       const bottleBounds = bottle.getBounds();
-      const isColliding = this.areRectsOverlapping(playerBounds, bottleBounds);
+      const isColliding = this.collisionSystem.areRectsOverlapping(playerBounds, bottleBounds);
 
       if (isColliding) {
         bottle.collect();
         this.collectedBottles += 1;
       }
     });
-  }
-
-  loadHealthBarImages() {
-    const levels = [0, 20, 40, 60, 80, 100];
-    const images = {};
-
-    levels.forEach((level) => {
-      const image = new Image();
-      image.src = `assets/img/statusbars/health/${level}.png`;
-      images[level] = image;
-    });
-
-    return images;
-  }
-
-  loadBottleBarImages() {
-    const levels = [0, 20, 40, 60, 80, 100];
-    const images = {};
-
-    levels.forEach((level) => {
-      const image = new Image();
-      image.src = `assets/img/statusbars/bottles/${level}.png`;
-      images[level] = image;
-    });
-
-    return images;
-  }
-
-  getBottleBarLevel() {
-    if (this.maxBottles === 0) {
-      return 0;
-    }
-
-    const percent = (this.collectedBottles / this.maxBottles) * 100;
-
-    if (percent >= 100) return 100;
-    if (percent >= 80) return 80;
-    if (percent >= 60) return 60;
-    if (percent >= 40) return 40;
-    if (percent >= 20) return 20;
-    return 0;
-  }
-
-  drawBottleBar() {
-    const level = this.getBottleBarLevel();
-    const image = this.bottleBarImages[level];
-
-    if (image && image.complete && image.naturalWidth > 0) {
-      this.context.drawImage(image, 20, 120, 200, 50);
-      return;
-    }
-
-    this.context.fillStyle = "#ffffff";
-    this.context.font = "20px Arial";
-    this.context.fillText(`Bottles: ${this.collectedBottles}`, 20, 140);
-  }
-
-  getHealthBarLevel() {
-    if (this.player.health >= 100) return 100;
-    if (this.player.health >= 80) return 80;
-    if (this.player.health >= 60) return 60;
-    if (this.player.health >= 40) return 40;
-    if (this.player.health >= 20) return 20;
-    return 0;
-  }
-
-  drawHealthBar() {
-    const level = this.getHealthBarLevel();
-    const image = this.healthBarImages[level];
-
-    if (image && image.complete && image.naturalWidth > 0) {
-      this.context.drawImage(image, 20, 20, 200, 50);
-      return;
-    }
   }
 
   checkGameWin() {
@@ -385,48 +306,6 @@ class Game {
     return this.isGameOver;
   }
 
-  loadCoinBarImages() {
-    const levels = [0, 20, 40, 60, 80, 100];
-    const images = {};
-
-    levels.forEach((level) => {
-      const image = new Image();
-      image.src = `assets/img/statusbars/coins/${level}.png`;
-      images[level] = image;
-    });
-
-    return images;
-  }
-
-  getCoinBarLevel() {
-    if (this.maxCoins === 0) {
-      return 0;
-    }
-
-    const percent = (this.collectedCoins / this.maxCoins) * 100;
-
-    if (percent >= 100) return 100;
-    if (percent >= 80) return 80;
-    if (percent >= 60) return 60;
-    if (percent >= 40) return 40;
-    if (percent >= 20) return 20;
-    return 0;
-  }
-
-  drawCoinBar() {
-    const level = this.getCoinBarLevel();
-    const image = this.coinBarImages[level];
-
-    if (image && image.complete && image.naturalWidth > 0) {
-      this.context.drawImage(image, 20, 70, 200, 50);
-      return;
-    }
-
-    this.context.fillStyle = "#ffffff";
-    this.context.font = "20px Arial";
-    this.context.fillText(`Coins: ${this.collectedCoins}`, 20, 85);
-  }
-
   handleThrowInput() {
     if (!this.keys.KeyD) {
       return;
@@ -465,11 +344,11 @@ class Game {
       if (this.isBossFightActive && !this.endboss.isDead) {
         const bottleBounds = throwable.getBounds();
         const bossBounds = this.endboss.getBounds();
-        const hitsBoss = this.areRectsOverlapping(bottleBounds, bossBounds);
+        const hitsBoss = this.collisionSystem.areRectsOverlapping(bottleBounds, bossBounds);
 
         if (hitsBoss) {
           this.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
-          this.endboss.applyKnockback(throwable.x)
+          this.endboss.applyKnockback(throwable.x);
           throwable.isFinished = true;
           return;
         }
@@ -485,7 +364,7 @@ class Game {
         if (enemy.enemyType !== "normal") return;
 
         const enemyBounds = enemy.getBounds();
-        const isColliding = this.areRectsOverlapping(bottleBounds, enemyBounds);
+        const isColliding = this.collisionSystem.areRectsOverlapping(bottleBounds, enemyBounds);
 
         if (!isColliding) {
           return;
@@ -496,41 +375,6 @@ class Game {
       });
     });
   }
-
-  loadEndbossBarImages() {
-    const levels = [0, 20, 40, 60, 80, 100];
-    const images = {};
-
-    levels.forEach((level) => {
-      const image = new Image();
-      image.src = `assets/img/statusbars/endboss/${level}.png`;
-      images[level] = image;
-    });
-
-    return images;
-  }
-
-  getEndbossBarLevel() {
-    if (this.endboss.health >= 100) return 100;
-    if (this.endboss.health >= 80) return 80;
-    if (this.endboss.health >= 60) return 60;
-    if (this.endboss.health >= 40) return 40;
-    if (this.endboss.health >= 20) return 20;
-    return 0;
-  }
-
-  drawEndbossBar() {
-  if (!this.isBossFightActive || this.endboss.isDead) {
-    return;
-  }
-
-  const level = this.getEndbossBarLevel();
-  const image = this.endbossBarImages[level];
-
-  if (image && image.complete && image.naturalWidth > 0) {
-    this.context.drawImage(image, this.canvas.width - 240, 30, 200, 50);
-  }
-}
 
   drawWinScreen() {
     if (this.winScreenImage.complete && this.winScreenImage.naturalWidth > 0) {
