@@ -259,9 +259,7 @@ class Game {
   drawWinScreen() {
     if (this.isDrawableImage(this.winScreenImage)) {
       this.drawFullScreenImage(this.winScreenImage);
-      return;
     }
-    this.drawWinFallback();
   }
 
   isDrawableImage(image) {
@@ -270,14 +268,6 @@ class Game {
 
   drawFullScreenImage(image) {
     this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  drawWinFallback() {
-    this.context.fillStyle = "rgba(0, 0, 0, 0.55)";
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.fillStyle = "#ffffff";
-    this.context.font = "42px Arial";
-    this.context.fillText("You Win!", 250, 240);
   }
 
   playSound(name) {
