@@ -55,7 +55,7 @@ class Game {
 
   setupAudio() {
     this.audio = new AudioManager();
-    this.loadSounds();
+    this.audio.loadDefaultGameSounds();
   }
 
   createCoins() {
@@ -290,18 +290,5 @@ class Game {
 
   isMuted() {
     return this.audio.isMuted();
-  }
-
-  loadSounds() {
-    this.audio.load("GAME_START", AUDIO_PATHS.GAME.START, 0.5);
-    this.audio.load("GAME_WIN", AUDIO_PATHS.GAME.WIN, 0.5);
-    this.audio.load("JUMP", AUDIO_PATHS.PLAYER.JUMP, 0.5);
-    this.audio.load("PLAYER_HIT", AUDIO_PATHS.PLAYER.DAMAGE, 0.5);
-    this.audio.load("PLAYER_DEAD", AUDIO_PATHS.PLAYER.DEAD, 0.6);
-    this.audio.load("COIN", AUDIO_PATHS.COLLECT.COIN, 0.5);
-    this.audio.load("BOTTLE_COLLECT", AUDIO_PATHS.COLLECT.BOTTLE, 0.5);
-    this.audio.load("BOTTLE_BREAK", AUDIO_PATHS.BOTTLE.BREAK, 0.6);
-    this.audio.load("CHICKEN_DEAD", AUDIO_PATHS.ENEMY.CHICKEN_DEAD, 0.5);
-    this.audio.load("BOSS_APPROACH", AUDIO_PATHS.BOSS.APPROACH, 0.5);
   }
 }
