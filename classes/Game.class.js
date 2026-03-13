@@ -142,7 +142,6 @@ class Game {
     this.world.clear();
     this.world.beginRender();
     this.world.drawBackground();
-    this.world.drawGround();
     this.drawWorldObjects();
     this.world.endRender();
   }
