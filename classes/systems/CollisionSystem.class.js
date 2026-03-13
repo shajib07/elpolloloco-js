@@ -45,10 +45,12 @@ class CollisionSystem {
       ) {
         enemy.kill();
         this.game.player.bounceAfterStomp();
+        this.game.playSound("CHICKEN_DEAD");
         return;
       }
 
       this.game.player.takeHit(COMBAT.ENEMY_DAMAGE);
+      this.game.playSound("PLAYER_HIT");
     });
   }
 
@@ -82,6 +84,7 @@ class CollisionSystem {
       this.game.endboss.x,
       this.game.world.width,
     );
+    this.game.playSound("PLAYER_HIT");
     this.game.lastBossHitAt = now;
   }
 
@@ -99,6 +102,7 @@ class CollisionSystem {
       if (isColliding) {
         coin.collect();
         this.game.collectedCoins += 1;
+        this.game.playSound("COIN");
       }
     });
   }
@@ -117,6 +121,7 @@ class CollisionSystem {
       if (isColliding) {
         bottle.collect();
         this.game.collectedBottles += 1;
+        this.game.playSound("BOTTLE_COLLECT");
       }
     });
   }
@@ -136,6 +141,7 @@ class CollisionSystem {
           this.game.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
           this.game.endboss.applyKnockback(throwable.x, this.game.world.width);
           throwable.isFinished = true;
+          this.game.playSound("BOTTLE_BREAK");
           return;
         }
       }
@@ -158,6 +164,7 @@ class CollisionSystem {
 
         enemy.kill();
         throwable.isFinished = true;
+        this.game.playSound("BOTTLE_BREAK");
       });
     });
   }

@@ -1,36 +1,69 @@
+html,
 body {
-    margin: 0;
-    min-height: 100vh;
-    font-family: Arial, sans-serif;
-    display: grid;
-    place-items: center;
-    background: #1d3557;
-    color: white;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  color: white;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 220, 140, 0.25), transparent 35%),
+    radial-gradient(circle at 80% 18%, rgba(255, 160, 90, 0.22), transparent 28%),
+    linear-gradient(180deg, #3e89c7 0%, #74bce8 42%, #d8a14a 70%, #9a5f20 100%);
 }
 
 button {
-    margin: 0 6px;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+  margin: 0 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  background: #f4b860;
+  color: #2c1a08;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  filter: brightness(1.03);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  filter: brightness(0.98);
 }
 
 .landing-page {
-    width: 100%;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
 }
 
 .card {
   width: min(90vw, 520px);
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 15, 20, 0.55);
+  border: 2px solid rgba(255, 220, 140, 0.45);
   border-radius: 14px;
   padding: 24px;
   text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.card h1 {
+  margin: 0 0 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffd166;
 }
 
 .subtitle {
@@ -39,9 +72,19 @@ button {
 }
 
 .actions {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+#startButton {
+  background: linear-gradient(180deg, #ffd166 0%, #f4a73f 100%);
+  border-color: rgba(118, 72, 20, 0.45);
+}
+
+#infoButton {
+  background: linear-gradient(180deg, #ffe9a9 0%, #f2c86a 100%);
+  border-color: rgba(118, 72, 20, 0.35);
 }
 
 .modal {
@@ -50,17 +93,36 @@ button {
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(8, 12, 22, 0.72);
+  backdrop-filter: blur(2px);
 }
 
 .modal-content {
-width: min(92vw, 520px);
+  width: min(92vw, 520px);
   position: relative;
-  background: #ffffff;
-  color: #111111;
+  background: linear-gradient(180deg, #fff7e6 0%, #ffe8c2 100%);
+  color: #3a2610;
+  border: 2px solid rgba(162, 103, 40, 0.45);
   border-radius: 14px;
-  padding: 24px;
+  padding: 24px 24px 18px;
   text-align: left;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.modal-content h2 {
+  margin: 0 0 14px;
+  color: #8b3f14;
+  letter-spacing: 0.3px;
+}
+
+.modal-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.modal-content li {
+  margin-bottom: 8px;
+  line-height: 1.35;
 }
 
 .close-btn {
@@ -69,10 +131,18 @@ width: min(92vw, 520px);
   right: 10px;
   width: 32px;
   height: 32px;
-  border: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 50%;
+  background: #ffe3b3;
+  color: #6e3a15;
   cursor: pointer;
   font-weight: 700;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.close-btn:hover {
+  background: #ffd69a;
+  transform: scale(1.05);
 }
 
 .hidden {
@@ -80,7 +150,8 @@ width: min(92vw, 520px);
 }
 
 .game-screen {
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -93,6 +164,14 @@ width: min(92vw, 520px);
   gap: 8px;
   min-width: 230px;
   justify-content: flex-end;
+}
+
+#backButton {
+  background: linear-gradient(180deg, #ffe2b8 0%, #f3c08a 100%);
+}
+
+#restartButton {
+  background: linear-gradient(180deg, #ffd493 0%, #ea9f4b 100%);
 }
 
 .game-wrapper {

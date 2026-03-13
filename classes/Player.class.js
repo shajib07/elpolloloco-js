@@ -46,6 +46,9 @@ class Player extends MovableObject {
     if (keys.Space && this.isOnGround) {
       this.velocityY = this.jumpStrength;
       this.isOnGround = false;
+      if (window.currentGameInstance) {
+        window.currentGameInstance.playSound("JUMP");
+      }
     }
 
     if (keys.ArrowLeft) {
@@ -159,16 +162,16 @@ class Player extends MovableObject {
     };
   }
 
-applyKnockback(fromX, worldWidth) {
-  const knockbackDistance = 30;
+  applyKnockback(fromX, worldWidth) {
+    const knockbackDistance = 30;
 
-  if (this.x < fromX) {
-    this.x -= knockbackDistance;
-  } else {
-    this.x += knockbackDistance;
+    if (this.x < fromX) {
+      this.x -= knockbackDistance;
+    } else {
+      this.x += knockbackDistance;
+    }
+
+    const maxX = worldWidth - this.width;
+    this.x = Math.max(0, Math.min(this.x, maxX));
   }
-
-  const maxX = worldWidth - this.width;
-  this.x = Math.max(0, Math.min(this.x, maxX));
-}
 }

@@ -46,8 +46,38 @@ class World {
   }
 
   drawGround() {
-    this.context.fillStyle = "#3a506b";
-    this.context.fillRect(0, 420, this.width, 60);
+    const groundY = 420;
+    const groundHeight = 60;
+    // Base sand gradient
+    const gradient = this.context.createLinearGradient(
+      0,
+      groundY,
+      0,
+      groundY + groundHeight,
+    );
+    gradient.addColorStop(0, "#d9a441");
+    gradient.addColorStop(1, "#a8701f");
+    this.context.fillStyle = gradient;
+    this.context.fillRect(0, groundY, this.width, groundHeight);
+    // Top highlight strip
+    this.context.fillStyle = "rgba(255, 235, 180, 0.35)";
+    this.context.fillRect(0, groundY, this.width, 4);
+    // Subtle texture lines
+    this.context.strokeStyle = "rgba(120, 80, 30, 0.25)";
+    this.context.lineWidth = 1;
+    for (let x = 0; x < this.width; x += 36) {
+      this.context.beginPath();
+      this.context.moveTo(x, groundY + 14);
+      this.context.lineTo(x + 12, groundY + 20);
+      this.context.stroke();
+    }
+    // Tiny pebbles
+    this.context.fillStyle = "rgba(90, 60, 25, 0.35)";
+    for (let x = 20; x < this.width; x += 80) {
+      this.context.beginPath();
+      this.context.arc(x, groundY + 36, 2, 0, Math.PI * 2);
+      this.context.fill();
+    }
   }
 
   clear() {

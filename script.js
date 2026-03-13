@@ -26,6 +26,7 @@ function setScreen(mode) {
 init();
 
 function init() {
+  setScreen(SCREEN.HOME);
   bindUiEvents();
   bindKeyboardEvents();
 }
@@ -63,6 +64,7 @@ function handleStartClick() {
   setScreen(SCREEN.GAME);
   if (!game) {
     game = new Game(gameCanvas, keys, handleGameOver);
+    window.currentGameInstance = game;
   }
   game.start();
 }
@@ -89,6 +91,7 @@ function showHomeScreen() {
     game.stop();
     game = null;
   }
+  window.currentGameInstance = null;
   restartButton.classList.add("button-hidden");
   setScreen(SCREEN.HOME);
 }
@@ -100,6 +103,7 @@ function handleRestartClick() {
   }
 
   game = new Game(gameCanvas, keys, handleGameOver);
+  window.currentGameInstance = game;
   game.start();
   restartButton.textContent = "Restart";
   restartButton.classList.add("button-hidden");
