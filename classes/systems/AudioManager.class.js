@@ -1,6 +1,7 @@
 class AudioManager {
   constructor() {
     this.sounds = {};
+    this.muted = localStorage.getItem("muted") === "true";
   }
 
   load(name, path, volume = 1) {
@@ -10,6 +11,7 @@ class AudioManager {
   }
 
   play(name) {
+    if (this.muted) return;
     const sound = this.sounds[name];
     if (!sound) return;
 
@@ -18,6 +20,7 @@ class AudioManager {
   }
 
   loop(name) {
+    if (this.muted) return;
     const sound = this.sounds[name];
     if (!sound) return;
 
@@ -31,5 +34,25 @@ class AudioManager {
 
     sound.pause();
     sound.currentTime = 0;
+  }
+
+  setMuted(value) {
+    this.muted = Boolean(value);
+    localStorage.setItem("muted", String(this.muted));
+
+    if (this.muted) {
+      Object.values(this.sounds).forEach((sound) => {
+        sound.pause();
+        sound.currentTime = 0;
+      });
+    }
+  }
+
+  toggleMute() {
+    this.setMuted(!this.muted);
+  }
+
+  isMuted() {
+    return this.muted;
   }
 }

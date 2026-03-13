@@ -5,6 +5,7 @@ const closeModalButton = document.getElementById("closeModalButton");
 const landingPage = document.querySelector(".landing-page");
 const gameScreen = document.getElementById("gameScreen");
 const backButton = document.getElementById("backButton");
+const muteButton = document.getElementById("muteButton");
 const restartButton = document.getElementById("restartButton");
 const gameCanvas = document.getElementById("gameCanvas");
 
@@ -29,6 +30,7 @@ function init() {
   setScreen(SCREEN.HOME);
   bindUiEvents();
   bindKeyboardEvents();
+  updateMuteButtonLabel();
 }
 
 function bindUiEvents() {
@@ -37,6 +39,7 @@ function bindUiEvents() {
   closeModalButton.addEventListener("click", closeInfoModal);
   infoModal.addEventListener("click", closeModalOnBackdrop);
   backButton.addEventListener("click", showHomeScreen);
+  muteButton.addEventListener("click", handleMuteToggle);
   restartButton.addEventListener("click", handleRestartClick);
 }
 
@@ -66,6 +69,7 @@ function handleStartClick() {
     game = new Game(gameCanvas, keys, handleGameOver);
     window.currentGameInstance = game;
   }
+  updateMuteButtonLabel();
   game.start();
 }
 
@@ -93,6 +97,7 @@ function showHomeScreen() {
   }
   window.currentGameInstance = null;
   restartButton.classList.add("button-hidden");
+  updateMuteButtonLabel();
   setScreen(SCREEN.HOME);
 }
 
@@ -104,6 +109,7 @@ function handleRestartClick() {
 
   game = new Game(gameCanvas, keys, handleGameOver);
   window.currentGameInstance = game;
+  updateMuteButtonLabel();
   game.start();
   restartButton.textContent = "Restart";
   restartButton.classList.add("button-hidden");
@@ -119,4 +125,24 @@ function handleGameOver(result) {
 
   restartButton.textContent = result === "win" ? "Play Again" : "Try Again";
   restartButton.classList.remove("button-hidden");
+}
+
+function handleMuteToggle() {
+  if (game) {
+    game.toggleMute();
+    updateMuteButtonLabel();
+    return;
+  }
+
+  const isMuted = localStorage.getItem("muted") === "true";
+  localStorage.setItem("muted", String(!isMuted));
+  updateMuteButtonLabel();
+}
+
+function updateMuteButtonLabel() {
+  const isMuted = game
+    ? game.isMuted()
+    : localStorage.getItem("muted") === "true";
+
+  muteButton.textContent = isMuted ? "Sound: Off" : "Sound: On";
 }

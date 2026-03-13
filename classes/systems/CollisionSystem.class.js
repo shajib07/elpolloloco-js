@@ -22,150 +22,140 @@ class CollisionSystem {
 
   checkPlayerEnemyCollisions() {
     const playerBounds = this.game.player.getBounds();
+    this.game.enemies.forEach((enemy) =>
+      this.handlePlayerEnemyCollision(enemy, playerBounds),
+    );
+  }
 
-    this.game.enemies.forEach((enemy) => {
-      if (enemy.isDead) {
-        return;
-      }
+  handlePlayerEnemyCollision(enemy, playerBounds) {
+    if (enemy.isDead) return;
 
-      const enemyBounds = enemy.getBounds();
-      const isColliding = this.areRectsOverlapping(playerBounds, enemyBounds);
+    const enemyBounds = enemy.getBounds();
+    if (!this.areRectsOverlapping(playerBounds, enemyBounds)) return;
 
-      if (!isColliding) {
-        return;
-      }
+    if (this.tryHandleStomp(enemy, playerBounds, enemyBounds)) return;
 
-      const canBeStomped =
-        enemy.enemyType === "small" || enemy.enemyType === "normal";
+    this.damagePlayerFromEnemy();
+  }
 
-      if (
-        canBeStomped &&
-        this.isStompHit(playerBounds, enemyBounds) &&
-        this.game.player.isFalling()
-      ) {
-        enemy.kill();
-        this.game.player.bounceAfterStomp();
-        this.game.playSound("CHICKEN_DEAD");
-        return;
-      }
+  tryHandleStomp(enemy, playerBounds, enemyBounds) {
+    if (!this.canBeStomped(enemy)) return false;
+    if (!this.isStompHit(playerBounds, enemyBounds)) return false;
+    if (!this.game.player.isFalling()) return false;
 
-      this.game.player.takeHit(COMBAT.ENEMY_DAMAGE);
-      this.game.playSound("PLAYER_HIT");
-    });
+    enemy.kill();
+    this.game.player.bounceAfterStomp();
+    this.game.playSound("CHICKEN_DEAD");
+    return true;
+  }
+
+  canBeStomped(enemy) {
+    return enemy.enemyType === "small" || enemy.enemyType === "normal";
+  }
+
+  damagePlayerFromEnemy() {
+    this.game.player.takeHit(COMBAT.ENEMY_DAMAGE);
+    this.game.playSound("PLAYER_HIT");
   }
 
   checkPlayerBossCollision() {
-    if (!this.game.isBossFightActive) {
-      return;
-    }
-
-    if (this.game.endboss.isDead) {
-      return;
-    }
+    if (!this.shouldCheckBossCollision()) return;
 
     const playerBounds = this.game.player.getBounds();
     const bossBounds = this.game.endboss.getBounds();
-    const isColliding = this.areRectsOverlapping(playerBounds, bossBounds);
-
-    if (!isColliding) {
-      return;
-    }
+    if (!this.areRectsOverlapping(playerBounds, bossBounds)) return;
 
     const now = Date.now();
-    const isOnCooldown =
-      now - this.game.lastBossHitAt < this.game.bossHitCooldownMs;
+    if (this.isBossHitOnCooldown(now)) return;
 
-    if (isOnCooldown) {
-      return;
-    }
+    this.applyBossContactDamage(now);
+  }
 
+  shouldCheckBossCollision() {
+    return this.game.isBossFightActive && !this.game.endboss.isDead;
+  }
+
+  isBossHitOnCooldown(now) {
+    return now - this.game.lastBossHitAt < this.game.bossHitCooldownMs;
+  }
+
+  applyBossContactDamage(now) {
     this.game.player.takeHit(COMBAT.BOSS_DAMAGE);
-    this.game.player.applyKnockback(
-      this.game.endboss.x,
-      this.game.world.width,
-    );
+    this.game.player.applyKnockback(this.game.endboss.x, this.game.world.width);
     this.game.playSound("PLAYER_HIT");
     this.game.lastBossHitAt = now;
   }
 
   checkCoinCollisions() {
-    const playerBounds = this.game.player.getBounds();
-
-    this.game.coins.forEach((coin) => {
-      if (coin.isCollected) {
-        return;
-      }
-
-      const coinBounds = coin.getBounds();
-      const isColliding = this.areRectsOverlapping(playerBounds, coinBounds);
-
-      if (isColliding) {
-        coin.collect();
-        this.game.collectedCoins += 1;
-        this.game.playSound("COIN");
-      }
+    this.checkCollectibleCollisions(this.game.coins, (coin) => {
+      coin.collect();
+      this.game.collectedCoins += 1;
+      this.game.playSound("COIN");
     });
   }
 
   checkBottleCollisions() {
+    this.checkCollectibleCollisions(this.game.bottles, (bottle) => {
+      bottle.collect();
+      this.game.collectedBottles += 1;
+      this.game.playSound("BOTTLE_COLLECT");
+    });
+  }
+
+  checkCollectibleCollisions(items, onCollect) {
     const playerBounds = this.game.player.getBounds();
-
-    this.game.bottles.forEach((bottle) => {
-      if (bottle.isCollected) {
-        return;
-      }
-
-      const bottleBounds = bottle.getBounds();
-      const isColliding = this.areRectsOverlapping(playerBounds, bottleBounds);
-
-      if (isColliding) {
-        bottle.collect();
-        this.game.collectedBottles += 1;
-        this.game.playSound("BOTTLE_COLLECT");
-      }
+    items.forEach((item) => {
+      if (item.isCollected) return;
+      if (!this.areRectsOverlapping(playerBounds, item.getBounds())) return;
+      onCollect(item);
     });
   }
 
   checkThrowableEnemyCollisions() {
-    this.game.throwables.forEach((throwable) => {
-      if (throwable.isFinished) {
-        return;
-      }
+    this.game.throwables.forEach((throwable) =>
+      this.handleThrowableEnemyCollision(throwable),
+    );
+  }
 
-      if (this.game.isBossFightActive && !this.game.endboss.isDead) {
-        const bottleBounds = throwable.getBounds();
-        const bossBounds = this.game.endboss.getBounds();
-        const hitsBoss = this.areRectsOverlapping(bottleBounds, bossBounds);
+  handleThrowableEnemyCollision(throwable) {
+    if (throwable.isFinished) return;
+    if (this.tryHitBossWithThrowable(throwable)) return;
+    this.tryHitEnemyWithThrowable(throwable);
+  }
 
-        if (hitsBoss) {
-          this.game.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
-          this.game.endboss.applyKnockback(throwable.x, this.game.world.width);
-          throwable.isFinished = true;
-          this.game.playSound("BOTTLE_BREAK");
-          return;
-        }
-      }
+  tryHitBossWithThrowable(throwable) {
+    if (!this.shouldCheckBossCollision()) return false;
 
-      const bottleBounds = throwable.getBounds();
+    const hitsBoss = this.areRectsOverlapping(
+      throwable.getBounds(),
+      this.game.endboss.getBounds(),
+    );
+    if (!hitsBoss) return false;
 
-      this.game.enemies.forEach((enemy) => {
-        if (enemy.isDead) {
-          return;
-        }
+    this.applyThrowableHitToBoss(throwable);
+    return true;
+  }
 
-        if (enemy.enemyType !== "normal") return;
+  applyThrowableHitToBoss(throwable) {
+    this.game.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
+    this.game.endboss.applyKnockback(throwable.x, this.game.world.width);
+    throwable.isFinished = true;
+    this.game.playSound("BOTTLE_BREAK");
+  }
 
-        const enemyBounds = enemy.getBounds();
-        const isColliding = this.areRectsOverlapping(bottleBounds, enemyBounds);
+  tryHitEnemyWithThrowable(throwable) {
+    const bottleBounds = throwable.getBounds();
+    this.game.enemies.forEach((enemy) => {
+      if (!this.canThrowableHitEnemy(enemy)) return;
+      if (!this.areRectsOverlapping(bottleBounds, enemy.getBounds())) return;
 
-        if (!isColliding) {
-          return;
-        }
-
-        enemy.kill();
-        throwable.isFinished = true;
-        this.game.playSound("BOTTLE_BREAK");
-      });
+      enemy.kill();
+      throwable.isFinished = true;
+      this.game.playSound("BOTTLE_BREAK");
     });
+  }
+
+  canThrowableHitEnemy(enemy) {
+    return !enemy.isDead && enemy.enemyType === "normal";
   }
 }

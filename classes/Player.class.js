@@ -5,24 +5,30 @@ class Player extends MovableObject {
   constructor() {
     super(80, 300, 90, 120);
     this.speed = 4;
+    this.currentAnimation = "idle";
+    this.setupAnimations();
+    this.setupPhysics();
+    this.setupHealth();
+  }
 
+  setupAnimations() {
     this.idleFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.IDLE);
     this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.WALK);
     this.jumpFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.JUMP);
     this.idleAnimation = new SpriteAnimation(this.idleFrames, 12);
     this.walkAnimation = new SpriteAnimation(this.walkFrames, 12);
     this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 12);
+  }
 
-    this.currentAnimation = "idle";
-
-    // fields for physics
+  setupPhysics() {
     this.groundY = 300;
     this.velocityY = 0;
     this.gravity = 0.8;
     this.jumpStrength = -14;
     this.isOnGround = true;
+  }
 
-    // health fields
+  setupHealth() {
     this.maxHealth = 100;
     this.health = 100;
     this.lastHitAt = 0;
@@ -35,38 +41,44 @@ class Player extends MovableObject {
    * @param {number} canvasWidth
    */
   update(keys, worldWidth) {
-    const isMoving = keys.ArrowLeft || keys.ArrowRight;
+    this.updateAnimationState(keys);
+    this.handleJumpInput(keys);
+    this.handleHorizontalMovement(keys);
+    this.applyGravity();
+    this.clampWithinWorld(worldWidth);
+    this.getCurrentAnimation().update();
+  }
 
+  updateAnimationState(keys) {
     if (!this.isOnGround) {
       this.setAnimation("jump");
-    } else {
-      isMoving ? this.setAnimation("walk") : this.setAnimation("idle");
+      return;
     }
+    const isMoving = keys.ArrowLeft || keys.ArrowRight;
+    isMoving ? this.setAnimation("walk") : this.setAnimation("idle");
+  }
 
-    if (keys.Space && this.isOnGround) {
-      this.velocityY = this.jumpStrength;
-      this.isOnGround = false;
-      if (window.currentGameInstance) {
-        window.currentGameInstance.playSound("JUMP");
-      }
-    }
+  handleJumpInput(keys) {
+    if (!keys.Space || !this.isOnGround) return;
+    this.velocityY = this.jumpStrength;
+    this.isOnGround = false;
+    if (!window.currentGameInstance) return;
+    window.currentGameInstance.playSound("JUMP");
+  }
 
+  handleHorizontalMovement(keys) {
     if (keys.ArrowLeft) {
       this.x -= this.speed;
       this.facingLeft = true;
     }
+    if (!keys.ArrowRight) return;
+    this.x += this.speed;
+    this.facingLeft = false;
+  }
 
-    if (keys.ArrowRight) {
-      this.x += this.speed;
-      this.facingLeft = false;
-    }
-
-    this.applyGravity();
-
+  clampWithinWorld(worldWidth) {
     const maxX = worldWidth - this.width;
     this.x = Math.max(0, Math.min(this.x, maxX));
-
-    this.getCurrentAnimation().update();
   }
 
   applyGravity() {
@@ -99,24 +111,23 @@ class Player extends MovableObject {
   draw(context) {
     const animation = this.getCurrentAnimation();
     const frame = animation.getCurrentFrame();
-
     if (!this.isImageReady(frame)) return;
-
     if (this.facingLeft) {
-      context.save();
-      context.translate(this.x, this.y + this.height / 2);
-      context.scale(-1, 1);
-      context.drawImage(
-        frame,
-        -this.width / 2,
-        -this.height / 2,
-        this.width,
-        this.height,
-      );
-      context.restore();
+      this.drawFacingLeft(context, frame);
       return;
     }
+    this.drawFacingRight(context, frame);
+  }
 
+  drawFacingLeft(context, frame) {
+    context.save();
+    context.translate(this.x, this.y + this.height / 2);
+    context.scale(-1, 1);
+    context.drawImage(frame, -this.width / 2, -this.height / 2, this.width, this.height);
+    context.restore();
+  }
+
+  drawFacingRight(context, frame) {
     context.drawImage(frame, this.x, this.y, this.width, this.height);
   }
 

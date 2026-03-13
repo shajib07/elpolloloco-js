@@ -47,6 +47,7 @@ button:active {
   display: grid;
   place-items: center;
   padding: 24px;
+  position: relative;
 }
 
 .card {
@@ -75,6 +76,18 @@ button:active {
   display: flex;
   justify-content: center;
   gap: 10px;
+}
+
+.impressum-link {
+  display: inline-block;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.impressum-link:hover {
+  color: #ffffff;
 }
 
 #startButton {
@@ -157,13 +170,21 @@ button:active {
   place-items: center;
   text-align: center;
   padding: 24px;
+  position: relative;
 }
 
 .game-actions {
   display: flex;
   gap: 8px;
-  min-width: 230px;
+  min-width: 360px;
+  align-items: center;
   justify-content: flex-end;
+}
+
+.game-impressum-link {
+  margin-top: 0;
+  margin-left: 6px;
+  font-size: 14px;
 }
 
 #backButton {
@@ -172,6 +193,10 @@ button:active {
 
 #restartButton {
   background: linear-gradient(180deg, #ffd493 0%, #ea9f4b 100%);
+}
+
+#muteButton {
+  background: linear-gradient(180deg, #e2f3ff 0%, #9fd3f3 100%);
 }
 
 .game-wrapper {
@@ -198,6 +223,7 @@ button:active {
 }
 
 #backButton,
+#muteButton,
 #restartButton {
   min-width: 110px;
 }

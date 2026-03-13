@@ -16,6 +16,7 @@
           <button id="startButton">Start Game</button>
           <button id="infoButton">How to Play</button>
         </div>
+        <a class="impressum-link" href="impressum.html">Impressum</a>
       </section>
     </main>
 
@@ -25,7 +26,11 @@
           <h2>El Pollo Loco</h2>
           <div class="game-actions">
             <button id="backButton">Back to Home</button>
+            <button id="muteButton">Sound: On</button>
             <button id="restartButton" class="button-hidden">Restart</button>
+            <a class="impressum-link game-impressum-link" href="impressum.html">
+              Impressum
+            </a>
           </div>
         </div>
         <canvas id="gameCanvas" width="720" height="480"></canvas>
@@ -56,6 +61,7 @@
     <script src="constants/ImagePaths.const.js"></script>
     <script src="constants/Combat.const.js"></script>
     <script src="constants/AudioPaths.const.js"></script>
+    <script src="constants/Animation.const.js"></script>
     
     <script src="classes/helpers/ImageManager.class.js"></script>
     <script src="classes/systems/AudioManager.class.js"></script>

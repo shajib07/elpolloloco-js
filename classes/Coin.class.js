@@ -3,7 +3,7 @@ class Coin extends DrawableObject {
     super(x, y, 64, 64);
     this.isCollected = false;
 
-    this.image = ImageManager.load(IMAGE_PATHS.ITEMS.COIN)
+    this.image = ImageManager.load(IMAGE_PATHS.ITEMS.COIN);
   }
 
   draw(context) {

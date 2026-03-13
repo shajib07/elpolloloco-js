@@ -20,21 +20,20 @@ class Chicken extends Enemy {
 
   draw(context) {
     if (this.isDead) {
-      if (this.isImageReady(this.deadImage)) {
-        context.drawImage(
-          this.deadImage,
-          this.x,
-          this.y,
-          this.width,
-          this.height,
-        );
-      }
+      this.drawDead(context);
       return;
     }
+    this.drawWalking(context);
+  }
 
+  drawDead(context) {
+    if (!this.isImageReady(this.deadImage)) return;
+    context.drawImage(this.deadImage, this.x, this.y, this.width, this.height);
+  }
+
+  drawWalking(context) {
     const frame = this.walkAnimation.getCurrentFrame();
-    if (this.isImageReady(frame)) {
-      context.drawImage(frame, this.x, this.y, this.width, this.height);
-    }
+    if (!this.isImageReady(frame)) return;
+    context.drawImage(frame, this.x, this.y, this.width, this.height);
   }
 }

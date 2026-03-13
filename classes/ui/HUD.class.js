@@ -2,13 +2,19 @@ class HUD {
   constructor(context, canvas) {
     this.context = context;
     this.canvas = canvas;
+    this.loadImages();
+    this.layout = this.createLayout();
+  }
 
+  loadImages() {
     this.healthBarImages = this.loadBarImages("health");
     this.coinBarImages = this.loadBarImages("coins");
     this.bottleBarImages = this.loadBarImages("bottles");
     this.endbossBarImages = this.loadBarImages("endboss");
+  }
 
-    this.layout = {
+  createLayout() {
+    return {
       health: { x: 20, y: 20, w: 200, h: 50 },
       coins: { x: 20, y: 70, w: 200, h: 50 },
       bottles: { x: 20, y: 120, w: 200, h: 50 },
