@@ -1,4 +1,11 @@
+/**
+ * Represents the endboss enemy with chase, damage and hurt states.
+ */
 class Endboss extends Enemy {
+  /**
+   * @param {number} x - Initial x position.
+   * @param {number} y - Initial y position.
+   */
   constructor(x, y) {
     super(x, y, 220, 280);
     this.enemyType = "boss";
@@ -34,6 +41,10 @@ class Endboss extends Enemy {
     this.canvasActivationX = 900;
   }
 
+  /**
+   * Updates boss movement, facing and animation each frame.
+   * @param {number} playerX - Current player x position.
+   */
   update(playerX) {
     if (this.isDead) return;
     this.updateHurtState();
@@ -59,6 +70,10 @@ class Endboss extends Enemy {
     this.x += this.speed;
   }
 
+  /**
+   * Draws the boss with optional hurt overlay.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   */
   draw(context) {
     const frame = this.walkAnimation.getCurrentFrame();
     if (!this.isImageReady(frame)) return;
@@ -93,6 +108,10 @@ class Endboss extends Enemy {
     context.restore();
   }
 
+  /**
+   * Applies damage to boss when cooldown allows it.
+   * @param {number} damage - Damage amount.
+   */
   takeHit(damage) {
     const now = Date.now();
     if (!this.canTakeHit(now)) return;
@@ -113,6 +132,11 @@ class Endboss extends Enemy {
     this.isDead = true;
   }
 
+  /**
+   * Applies horizontal knockback and clamps boss to world limits.
+   * @param {number} fromX - X position of hit source.
+   * @param {number} worldWidth - Horizontal world boundary.
+   */
   applyKnockback(fromX, worldWidth) {
     const knockbackDistance = 30;
 
@@ -126,6 +150,9 @@ class Endboss extends Enemy {
     this.x = Math.max(0, Math.min(this.x, maxX));
   }
 
+  /**
+   * @returns {boolean} True when boss reached activation area.
+   */
   isActive() {
     return this.x < this.canvasActivationX;
   }

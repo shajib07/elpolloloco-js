@@ -2,6 +2,11 @@
  * Controls game loop, updates and rendering.
  */
 class Game {
+  /**
+   * @param {HTMLCanvasElement} canvas - Main game canvas.
+   * @param {Object.<string, boolean>} keys - Shared keyboard state object.
+   * @param {(result: "win"|"lose") => void} onGameOver - End-of-game callback.
+   */
   constructor(canvas, keys, onGameOver) {
     this.setupCore(canvas, keys, onGameOver);
     this.setupWorldSystems();
@@ -73,12 +78,18 @@ class Game {
     return bottlePositions.map((x) => new Bottle(x, 342));
   }
 
+  /**
+   * Starts the animation loop once and plays start sound.
+   */
   start() {
     if (this.animationFrameId !== null) return;
     this.playSound("GAME_START");
     this.loop();
   }
 
+  /**
+   * Stops the running animation loop.
+   */
   stop() {
     if (this.animationFrameId === null) return;
     cancelAnimationFrame(this.animationFrameId);
@@ -92,6 +103,9 @@ class Game {
     this.animationFrameId = requestAnimationFrame(() => this.loop());
   }
 
+  /**
+   * Runs one game-tick update for world, collisions and win/lose checks.
+   */
   update() {
     if (this.isGameOver) return;
     this.updateWorldState();
@@ -132,6 +146,9 @@ class Game {
     this.checkGameOver();
   }
 
+  /**
+   * Draws world objects, HUD and end overlays.
+   */
   render() {
     this.renderWorldScene();
     this.renderHud();
@@ -192,6 +209,9 @@ class Game {
     }
   }
 
+  /**
+   * Triggers win state after endboss defeat.
+   */
   checkGameWin() {
     if (!this.shouldTriggerWin()) return;
     this.playSound("GAME_WIN");
@@ -205,6 +225,9 @@ class Game {
     return this.endboss.isDead;
   }
 
+  /**
+   * Triggers lose state when player health reaches zero.
+   */
   checkGameOver() {
     if (!this.shouldTriggerLose()) return;
     this.isGameOver = true;
@@ -231,6 +254,9 @@ class Game {
     return this.isGameOver;
   }
 
+  /**
+   * Processes throw input, cooldown and bottle inventory.
+   */
   handleThrowInput() {
     const now = Date.now();
     if (!this.canThrowBottle(now)) return;
@@ -240,6 +266,11 @@ class Game {
     this.lastThrowAt = now;
   }
 
+  /**
+   * Validates whether bottle throw is currently allowed.
+   * @param {number} now - Current timestamp in milliseconds.
+   * @returns {boolean}
+   */
   canThrowBottle(now) {
     if (!this.keys.KeyD) return false;
     if (this.collectedBottles <= 0) return false;
@@ -270,14 +301,24 @@ class Game {
     this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
   }
 
+  /**
+   * Plays a one-shot sound by registered sound name.
+   * @param {string} name - Sound identifier.
+   */
   playSound(name) {
     this.audio.play(name);
   }
 
+  /**
+   * Toggles global game audio mute state.
+   */
   toggleMute() {
     this.audio.toggleMute();
   }
 
+  /**
+   * @returns {boolean} True when audio is muted.
+   */
   isMuted() {
     return this.audio.isMuted();
   }

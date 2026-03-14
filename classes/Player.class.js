@@ -2,6 +2,9 @@
  * Represents the controllable player character.
  */
 class Player extends MovableObject {
+  /**
+   * Creates a player with movement, animation and health state.
+   */
   constructor() {
     super(80, 300, 90, 120);
     this.speed = 4;
@@ -11,6 +14,9 @@ class Player extends MovableObject {
     this.setupHealth();
   }
 
+  /**
+   * Loads all player sprite sheets and animations.
+   */
   setupAnimations() {
     this.idleFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.IDLE);
     this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.WALK);
@@ -20,6 +26,9 @@ class Player extends MovableObject {
     this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 12);
   }
 
+  /**
+   * Initializes gravity and jump physics values.
+   */
   setupPhysics() {
     this.groundY = 300;
     this.velocityY = 0;
@@ -28,6 +37,9 @@ class Player extends MovableObject {
     this.isOnGround = true;
   }
 
+  /**
+   * Initializes health and hit cooldown values.
+   */
   setupHealth() {
     this.maxHealth = 100;
     this.health = 100;
@@ -37,8 +49,8 @@ class Player extends MovableObject {
 
   /**
    * Updates player position based on pressed keys.
-   * @param {Object} keys
-   * @param {number} canvasWidth
+   * @param {Object.<string, boolean>} keys - Current keyboard state.
+   * @param {number} worldWidth - Horizontal world boundary.
    */
   update(keys, worldWidth) {
     this.updateAnimationState(keys);
@@ -81,6 +93,9 @@ class Player extends MovableObject {
     this.x = Math.max(0, Math.min(this.x, maxX));
   }
 
+  /**
+   * Applies gravity and snaps player to ground level.
+   */
   applyGravity() {
     this.velocityY += this.gravity;
     this.y += this.velocityY;
@@ -92,6 +107,10 @@ class Player extends MovableObject {
     }
   }
 
+  /**
+   * Returns the currently active animation object.
+   * @returns {SpriteAnimation}
+   */
   getCurrentAnimation() {
     if (this.currentAnimation === "jump") {
       return this.jumpAnimation;
@@ -106,7 +125,7 @@ class Player extends MovableObject {
 
   /**
    * Draws the player on the canvas.
-   * @param {CanvasRenderingContext2D} context
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
    */
   draw(context) {
     const animation = this.getCurrentAnimation();
@@ -131,6 +150,10 @@ class Player extends MovableObject {
     context.drawImage(frame, this.x, this.y, this.width, this.height);
   }
 
+  /**
+   * Switches animation and resets frame index on change.
+   * @param {"idle"|"walk"|"jump"} nextAnimation - Target animation key.
+   */
   setAnimation(nextAnimation) {
     if (this.currentAnimation === nextAnimation) {
       return;
@@ -140,6 +163,10 @@ class Player extends MovableObject {
     this.getCurrentAnimation().reset();
   }
 
+  /**
+   * Applies damage if hit cooldown has expired.
+   * @param {number} damage - Damage amount.
+   */
   takeHit(damage) {
     const now = Date.now();
     const isCooldownActive = now - this.lastHitAt < this.hitCooldownMs;
@@ -152,10 +179,16 @@ class Player extends MovableObject {
     this.lastHitAt = now;
   }
 
+  /**
+   * @returns {boolean} True while moving downward.
+   */
   isFalling() {
     return this.velocityY > 0;
   }
 
+  /**
+   * Triggers a short upward bounce after stomping an enemy.
+   */
   bounceAfterStomp() {
     this.velocityY = this.jumpStrength * 0.6;
     this.isOnGround = false;
@@ -165,6 +198,10 @@ class Player extends MovableObject {
     return true;
   }
 
+  /**
+   * Returns spawn position and direction for a thrown bottle.
+   * @returns {{x:number,y:number,facingLeft:boolean}}
+   */
   getThrowOrigin() {
     return {
       x: this.facingLeft ? this.x : this.x + this.width,
@@ -173,6 +210,11 @@ class Player extends MovableObject {
     };
   }
 
+  /**
+   * Pushes player away from hit source and clamps to world bounds.
+   * @param {number} fromX - X position of hit source.
+   * @param {number} worldWidth - Horizontal world boundary.
+   */
   applyKnockback(fromX, worldWidth) {
     const knockbackDistance = 30;
 

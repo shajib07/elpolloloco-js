@@ -14,6 +14,10 @@ let isGameScreenActive = false;
 
 const keys = { ...DEFAULT_KEYS };
 
+/**
+ * Switches between landing and game screens.
+ * @param {string} mode - Target screen value from SCREEN constants.
+ */
 function setScreen(mode) {
   const isHome = mode === SCREEN.HOME;
 
@@ -26,6 +30,9 @@ function setScreen(mode) {
 
 init();
 
+/**
+ * Initializes UI state and input bindings.
+ */
 function init() {
   setScreen(SCREEN.HOME);
   bindUiEvents();
@@ -60,6 +67,9 @@ function handleKeyUp(event) {
   }
 }
 
+/**
+ * Starts a new game session and switches to the game screen.
+ */
 function handleStartClick() {
   isGameScreenActive = true;
   restartButton.textContent = "Restart";
@@ -89,6 +99,9 @@ function closeModalOnBackdrop(event) {
   }
 }
 
+/**
+ * Returns from game screen to landing page and resets runtime instance.
+ */
 function showHomeScreen() {
   isGameScreenActive = false;
   if (game) {
@@ -101,6 +114,9 @@ function showHomeScreen() {
   setScreen(SCREEN.HOME);
 }
 
+/**
+ * Recreates game instance and starts a fresh run.
+ */
 function handleRestartClick() {
   if (game) {
     game.stop();
@@ -115,6 +131,10 @@ function handleRestartClick() {
   restartButton.classList.add("button-hidden");
 }
 
+/**
+ * Handles game-over callback and shows the restart action.
+ * @param {"win"|"lose"} result - Final game result.
+ */
 function handleGameOver(result) {
   if (game) {
     game.stop();
@@ -127,6 +147,9 @@ function handleGameOver(result) {
   restartButton.classList.remove("button-hidden");
 }
 
+/**
+ * Toggles mute state and updates button label.
+ */
 function handleMuteToggle() {
   if (game) {
     game.toggleMute();
@@ -139,6 +162,9 @@ function handleMuteToggle() {
   updateMuteButtonLabel();
 }
 
+/**
+ * Synchronizes mute button text with current mute state.
+ */
 function updateMuteButtonLabel() {
   const isMuted = game
     ? game.isMuted()

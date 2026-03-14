@@ -1,21 +1,37 @@
+/**
+ * Manages sound loading, playback, mute state and persistence.
+ */
 class AudioManager {
   constructor() {
     this.sounds = {};
     this.muted = localStorage.getItem("muted") === "true";
   }
 
+  /**
+   * Registers one sound asset.
+   * @param {string} name - Sound identifier.
+   * @param {string} path - Audio file path.
+   * @param {number} [volume=1] - Volume in range 0..1.
+   */
   load(name, path, volume = 1) {
     const audio = new Audio(path);
     audio.volume = volume;
     this.sounds[name] = audio;
   }
 
+  /**
+   * Registers all default game sound effects.
+   */
   loadDefaultGameSounds() {
     this.getDefaultGameSoundEntries().forEach((entry) => {
       this.load(entry.name, entry.path, entry.volume);
     });
   }
 
+  /**
+   * Provides default game sound definitions.
+   * @returns {{name:string,path:string,volume:number}[]}
+   */
   getDefaultGameSoundEntries() {
     return [
       { name: "GAME_START", path: AUDIO_PATHS.GAME.START, volume: 0.5 },
@@ -31,6 +47,10 @@ class AudioManager {
     ];
   }
 
+  /**
+   * Plays a one-shot sound from start.
+   * @param {string} name - Sound identifier.
+   */
   play(name) {
     if (this.muted) return;
     const sound = this.sounds[name];
@@ -40,6 +60,10 @@ class AudioManager {
     sound.play().catch(() => {});
   }
 
+  /**
+   * Starts a looping sound.
+   * @param {string} name - Sound identifier.
+   */
   loop(name) {
     if (this.muted) return;
     const sound = this.sounds[name];
@@ -49,6 +73,10 @@ class AudioManager {
     sound.play().catch(() => {});
   }
 
+  /**
+   * Stops one sound and resets playback position.
+   * @param {string} name - Sound identifier.
+   */
   stop(name) {
     const sound = this.sounds[name];
     if (!sound) return;
@@ -57,6 +85,10 @@ class AudioManager {
     sound.currentTime = 0;
   }
 
+  /**
+   * Sets global mute state and stores it in localStorage.
+   * @param {boolean} value - Desired mute state.
+   */
   setMuted(value) {
     this.muted = Boolean(value);
     localStorage.setItem("muted", String(this.muted));
@@ -69,10 +101,16 @@ class AudioManager {
     }
   }
 
+  /**
+   * Toggles global mute state.
+   */
   toggleMute() {
     this.setMuted(!this.muted);
   }
 
+  /**
+   * @returns {boolean} True when muted.
+   */
   isMuted() {
     return this.muted;
   }

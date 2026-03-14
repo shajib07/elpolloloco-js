@@ -1,8 +1,20 @@
+/**
+ * Handles all gameplay collision checks and collision outcomes.
+ */
 class CollisionSystem {
+  /**
+   * @param {Game} game - Active game instance.
+   */
   constructor(game) {
     this.game = game;
   }
 
+  /**
+   * Axis-aligned rectangle overlap test.
+   * @param {{x:number,y:number,width:number,height:number}} a
+   * @param {{x:number,y:number,width:number,height:number}} b
+   * @returns {boolean}
+   */
   areRectsOverlapping(a, b) {
     return (
       a.x < b.x + b.width &&
@@ -12,6 +24,12 @@ class CollisionSystem {
     );
   }
 
+  /**
+   * Checks whether player hits enemy from above within stomp tolerance.
+   * @param {{x:number,y:number,width:number,height:number}} playerBounds
+   * @param {{x:number,y:number,width:number,height:number}} enemyBounds
+   * @returns {boolean}
+   */
   isStompHit(playerBounds, enemyBounds) {
     const playerBottom = playerBounds.y + playerBounds.height;
     const enemyTop = enemyBounds.y;
@@ -20,6 +38,9 @@ class CollisionSystem {
     return playerBottom <= enemyTop + stompWindow;
   }
 
+  /**
+   * Resolves collisions between player and regular enemies.
+   */
   checkPlayerEnemyCollisions() {
     const playerBounds = this.game.player.getBounds();
     this.game.enemies.forEach((enemy) =>
@@ -58,6 +79,9 @@ class CollisionSystem {
     this.game.playSound("PLAYER_HIT");
   }
 
+  /**
+   * Resolves collision between player and endboss with cooldown.
+   */
   checkPlayerBossCollision() {
     if (!this.shouldCheckBossCollision()) return;
 
@@ -86,6 +110,9 @@ class CollisionSystem {
     this.game.lastBossHitAt = now;
   }
 
+  /**
+   * Resolves player collisions with coin collectibles.
+   */
   checkCoinCollisions() {
     this.checkCollectibleCollisions(this.game.coins, (coin) => {
       coin.collect();
@@ -94,6 +121,9 @@ class CollisionSystem {
     });
   }
 
+  /**
+   * Resolves player collisions with bottle collectibles.
+   */
   checkBottleCollisions() {
     this.checkCollectibleCollisions(this.game.bottles, (bottle) => {
       bottle.collect();
@@ -111,6 +141,9 @@ class CollisionSystem {
     });
   }
 
+  /**
+   * Resolves thrown bottle collisions against enemies and endboss.
+   */
   checkThrowableEnemyCollisions() {
     this.game.throwables.forEach((throwable) =>
       this.handleThrowableEnemyCollision(throwable),

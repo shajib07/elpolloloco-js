@@ -1,4 +1,11 @@
+/**
+ * Draws all status bars (player, collectibles and endboss).
+ */
 class HUD {
+  /**
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   * @param {HTMLCanvasElement} canvas - Main game canvas.
+   */
   constructor(context, canvas) {
     this.context = context;
     this.canvas = canvas;
@@ -6,6 +13,9 @@ class HUD {
     this.layout = this.createLayout();
   }
 
+  /**
+   * Loads image sets for each status bar group.
+   */
   loadImages() {
     this.healthBarImages = this.loadBarImages("health");
     this.coinBarImages = this.loadBarImages("coins");
@@ -13,6 +23,10 @@ class HUD {
     this.endbossBarImages = this.loadBarImages("endboss");
   }
 
+  /**
+   * Creates fixed positions for all HUD bars.
+   * @returns {Object}
+   */
   createLayout() {
     return {
       health: { x: 20, y: 20, w: 200, h: 50 },
@@ -22,6 +36,11 @@ class HUD {
     };
   }
 
+  /**
+   * Loads all level images (0..100) for one statusbar folder.
+   * @param {string} folderName - Statusbar folder name.
+   * @returns {Object.<number, HTMLImageElement>}
+   */
   loadBarImages(folderName) {
     const levels = [0, 20, 40, 60, 80, 100];
     const images = {};
@@ -35,6 +54,10 @@ class HUD {
     return images;
   }
 
+  /**
+   * @param {number} playerHealth
+   * @returns {0|20|40|60|80|100}
+   */
   getHealthBarLevel(playerHealth) {
     if (playerHealth >= 100) return 100;
     if (playerHealth >= 80) return 80;
@@ -44,6 +67,11 @@ class HUD {
     return 0;
   }
 
+  /**
+   * @param {number} collectedCoins
+   * @param {number} maxCoins
+   * @returns {0|20|40|60|80|100}
+   */
   getCoinBarLevel(collectedCoins, maxCoins) {
     if (maxCoins === 0) {
       return 0;
@@ -58,6 +86,11 @@ class HUD {
     return 0;
   }
 
+  /**
+   * @param {number} collectedBottles
+   * @param {number} maxBottles
+   * @returns {0|20|40|60|80|100}
+   */
   getBottleBarLevel(collectedBottles, maxBottles) {
     if (maxBottles === 0) {
       return 0;
@@ -72,6 +105,10 @@ class HUD {
     return 0;
   }
 
+  /**
+   * @param {number} endbossHealth
+   * @returns {0|20|40|60|80|100}
+   */
   getEndbossBarLevel(endbossHealth) {
     if (endbossHealth >= 100) return 100;
     if (endbossHealth >= 80) return 80;
@@ -81,6 +118,10 @@ class HUD {
     return 0;
   }
 
+  /**
+   * Draws player health status bar.
+   * @param {number} playerHealth
+   */
   drawHealthBar(playerHealth) {
     const level = this.getHealthBarLevel(playerHealth);
     const image = this.healthBarImages[level];
@@ -91,6 +132,11 @@ class HUD {
     }
   }
 
+  /**
+   * Draws collected coin progress bar.
+   * @param {number} collectedCoins
+   * @param {number} maxCoins
+   */
   drawCoinBar(collectedCoins, maxCoins) {
     const level = this.getCoinBarLevel(collectedCoins, maxCoins);
     const image = this.coinBarImages[level];
@@ -102,6 +148,11 @@ class HUD {
     }
   }
 
+  /**
+   * Draws collected bottle progress bar.
+   * @param {number} collectedBottles
+   * @param {number} maxBottles
+   */
   drawBottleBar(collectedBottles, maxBottles) {
     const level = this.getBottleBarLevel(collectedBottles, maxBottles);
     const image = this.bottleBarImages[level];
@@ -112,6 +163,11 @@ class HUD {
     }
   }
 
+  /**
+   * Draws endboss health bar while boss fight is active.
+   * @param {boolean} isBossFightActive
+   * @param {{isDead:boolean, health:number}} endboss
+   */
   drawEndbossBar(isBossFightActive, endboss) {
     if (!isBossFightActive || endboss.isDead) {
       return;
