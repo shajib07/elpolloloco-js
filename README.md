@@ -56,15 +56,17 @@ The game is organized into focused modules:
 
 ## Run Locally
 
-Because assets are loaded from relative paths, run with a local web server (recommended), for example:
+This is a vanilla JS project with no build step.  
+You can run it directly by opening `index.html`.
 
-```bash
-python3 -m http.server 8000
-```
+### Option A (quick start)
 
-Then open:
+- Open `index.html` in your browser.
 
-- `http://localhost:8000`
+### Option B (recommended for consistent browser behavior)
+
+Use any simple static file server.
+
 
 ## Deploy with FileZilla
 
