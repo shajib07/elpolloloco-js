@@ -344,22 +344,6 @@ button:active {
   }
 }
 
-@media (max-width: 1100px) and (orientation: landscape) {
-  .game-screen {
-    place-items: start center;
-    padding: 8px 14px calc(28px + env(safe-area-inset-bottom));
-  }
-
-  .game-wrapper {
-    width: min(90vw, 720px, calc((100svh - 140px) * 1.5));
-  }
-
-  .touch-controls {
-    display: grid;
-    bottom: 8px;
-  }
-}
-
 @media (max-height: 520px) {
   .landing-page,
   .game-screen {
@@ -378,6 +362,85 @@ button:active {
   .game-header h2 {
     margin: 0;
     font-size: 1.2rem;
+  }
+}
+
+/*
+ * Mobile/tablet landscape: the only orientation the game is playable in.
+ * The wrapper fills the viewport as a grid (header row + 1fr canvas row) so
+ * the canvas always fits the remaining height regardless of how many rows the
+ * header wraps to. This keeps the overlaid touch controls fully on-screen
+ * instead of being clipped at the bottom. Must stay after the max-height:520
+ * block so its wrapper sizing wins the cascade.
+ */
+@media (max-width: 1100px) and (orientation: landscape) {
+  .game-screen {
+    place-items: start center;
+    padding: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .game-wrapper {
+    width: min(95vw, 760px);
+    height: calc(100svh - 20px - env(safe-area-inset-bottom));
+    max-height: calc(100svh - 20px - env(safe-area-inset-bottom));
+    min-height: 0;
+    grid-template-rows: auto 1fr;
+    gap: 6px;
+    margin: 0 auto;
+  }
+
+  /* Hide the redundant title in-game to give the canvas more height. */
+  .game-header {
+    align-items: center;
+  }
+
+  .game-header h2 {
+    display: none;
+  }
+
+  /* Keep all action buttons + the Impressum link on a single row. */
+  .game-actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .game-actions button {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .game-actions a {
+    flex: 0 0 auto;
+  }
+
+  .game-impressum-link {
+    margin-left: 4px;
+    font-size: 12px;
+  }
+
+  /*
+   * width/height auto + max-width/max-height let the canvas (a replaced
+   * element) scale down to fit the 1fr row while preserving its 720:480
+   * aspect ratio, centered. No stretching, no letterboxing.
+   */
+  #gameCanvas {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    min-height: 0;
+    place-self: center;
+  }
+
+  .touch-controls {
+    display: grid;
+    bottom: 8px;
+    width: min(92vw, 720px, calc((100svh - 100px) * 1.5));
   }
 }
 
