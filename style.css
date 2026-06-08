@@ -350,6 +350,20 @@ button:active {
     padding: 12px;
   }
 
+  /* Tighten the start-card spacing on short screens so it fits without
+     shrinking the title text. */
+  .card {
+    padding: 18px 22px;
+  }
+
+  .card h1 {
+    margin: 0 0 6px;
+  }
+
+  .subtitle {
+    margin: 6px 0 14px;
+  }
+
   .game-wrapper {
     width: min(95vw, 760px, calc((100svh - 96px) * 1.5));
     gap: 8px;
@@ -374,6 +388,23 @@ button:active {
  * block so its wrapper sizing wins the cascade.
  */
 @media (max-width: 1100px) and (orientation: landscape) {
+  /*
+   * Start screen: cap the card to the viewport so it can never be clipped on
+   * short landscape screens. It scrolls internally only in the extreme case
+   * where the content is taller than the viewport; at normal sizes it just
+   * fits and stays centered.
+   */
+  .landing-page {
+    padding: 10px;
+  }
+
+  .card {
+    box-sizing: border-box;
+    width: min(92vw, 520px);
+    max-height: calc(100svh - 20px);
+    overflow-y: auto;
+  }
+
   .game-screen {
     place-items: start center;
     padding: 10px;
