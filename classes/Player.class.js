@@ -6,7 +6,7 @@ class Player extends MovableObject {
    * Creates a player with movement, animation and health state.
    */
   constructor() {
-    super(80, 300, 90, 120);
+    super(80, 210, 180, 270);
     this.speed = 4;
     this.currentAnimation = "idle";
     this.setupAnimations();
@@ -21,16 +21,21 @@ class Player extends MovableObject {
     this.idleFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.IDLE);
     this.walkFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.WALK);
     this.jumpFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.JUMP);
+    this.hurtFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.HURT);
+    this.deadFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.DEAD);
     this.idleAnimation = new SpriteAnimation(this.idleFrames, 12);
-    this.walkAnimation = new SpriteAnimation(this.walkFrames, 12);
-    this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 12);
+    this.walkAnimation = new SpriteAnimation(this.walkFrames, 8);
+    this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 8);
+    this.hurtAnimation = new SpriteAnimation(this.hurtFrames, 6, false);
+    this.deadAnimation = new SpriteAnimation(this.deadFrames, 10, false);
   }
 
   /**
    * Initializes gravity and jump physics values.
    */
   setupPhysics() {
-    this.groundY = 300;
+    this.floorY = 420;
+    this.groundY = this.floorY - this.height;
     this.velocityY = 0;
     this.gravity = 0.8;
     this.jumpStrength = -14;
@@ -45,6 +50,7 @@ class Player extends MovableObject {
     this.health = 100;
     this.lastHitAt = 0;
     this.hitCooldownMs = 800;
+    this.isDead = false;
   }
 
   /**
@@ -53,15 +59,33 @@ class Player extends MovableObject {
    * @param {number} worldWidth - Horizontal world boundary.
    */
   update(keys, worldWidth) {
-    this.updateAnimationState(keys);
+    if (this.isDead) {
+      this.getCurrentAnimation().update();
+      return;
+    }
+
     this.handleJumpInput(keys);
     this.handleHorizontalMovement(keys);
     this.applyGravity();
+    this.updateAnimationState(keys);
     this.clampWithinWorld(worldWidth);
     this.getCurrentAnimation().update();
   }
 
+  /**
+   * Switches between movement and hit/death animations based on player state.
+   * @param {Object.<string, boolean>} keys - Current keyboard state.
+   */
   updateAnimationState(keys) {
+    if (this.isDead) {
+      this.setAnimation("dead");
+      return;
+    }
+
+    if (this.currentAnimation === "hurt" && !this.hurtAnimation.isFinished) {
+      return;
+    }
+
     if (!this.isOnGround) {
       this.setAnimation("jump");
       return;
@@ -70,6 +94,10 @@ class Player extends MovableObject {
     isMoving ? this.setAnimation("walk") : this.setAnimation("idle");
   }
 
+  /**
+   * Starts a jump when the jump key is pressed and the player is on the ground.
+   * @param {Object.<string, boolean>} keys - Current keyboard state.
+   */
   handleJumpInput(keys) {
     if (!keys.Space || !this.isOnGround) return;
     this.velocityY = this.jumpStrength;
@@ -78,6 +106,10 @@ class Player extends MovableObject {
     window.currentGameInstance.playSound("JUMP");
   }
 
+  /**
+   * Moves the player left or right based on the pressed arrow keys.
+   * @param {Object.<string, boolean>} keys - Current keyboard state.
+   */
   handleHorizontalMovement(keys) {
     if (keys.ArrowLeft) {
       this.x -= this.speed;
@@ -88,6 +120,10 @@ class Player extends MovableObject {
     this.facingLeft = false;
   }
 
+  /**
+   * Keeps the player inside the horizontal world bounds.
+   * @param {number} worldWidth - Horizontal world boundary.
+   */
   clampWithinWorld(worldWidth) {
     const maxX = worldWidth - this.width;
     this.x = Math.max(0, Math.min(this.x, maxX));
@@ -120,6 +156,14 @@ class Player extends MovableObject {
       return this.walkAnimation;
     }
 
+    if (this.currentAnimation === "hurt") {
+      return this.hurtAnimation;
+    }
+
+    if (this.currentAnimation === "dead") {
+      return this.deadAnimation;
+    }
+
     return this.idleAnimation;
   }
 
@@ -138,6 +182,11 @@ class Player extends MovableObject {
     this.drawFacingRight(context, frame);
   }
 
+  /**
+   * Draws the player mirrored to face left.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   * @param {HTMLImageElement} frame - Current animation frame.
+   */
   drawFacingLeft(context, frame) {
     context.save();
     context.translate(this.x, this.y + this.height / 2);
@@ -146,13 +195,18 @@ class Player extends MovableObject {
     context.restore();
   }
 
+  /**
+   * Draws the player facing right.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   * @param {HTMLImageElement} frame - Current animation frame.
+   */
   drawFacingRight(context, frame) {
     context.drawImage(frame, this.x, this.y, this.width, this.height);
   }
 
   /**
    * Switches animation and resets frame index on change.
-   * @param {"idle"|"walk"|"jump"} nextAnimation - Target animation key.
+   * @param {"idle"|"walk"|"jump"|"hurt"|"dead"} nextAnimation - Target animation key.
    */
   setAnimation(nextAnimation) {
     if (this.currentAnimation === nextAnimation) {
@@ -168,6 +222,10 @@ class Player extends MovableObject {
    * @param {number} damage - Damage amount.
    */
   takeHit(damage) {
+    if (this.isDead) {
+      return;
+    }
+
     const now = Date.now();
     const isCooldownActive = now - this.lastHitAt < this.hitCooldownMs;
 
@@ -177,6 +235,30 @@ class Player extends MovableObject {
 
     this.health = Math.max(0, this.health - damage);
     this.lastHitAt = now;
+
+    if (this.health === 0) {
+      this.isDead = true;
+      this.velocityY = 0;
+      this.isOnGround = true;
+      this.y = this.groundY;
+      this.setAnimation("dead");
+      return;
+    }
+
+    this.setAnimation("hurt");
+  }
+
+  /**
+   * Returns a tighter collision box around the visible character body.
+   * @returns {{x:number,y:number,width:number,height:number}}
+   */
+  getBounds() {
+    return {
+      x: this.x + 21,
+      y: this.y + 105,
+      width: this.width - 42,
+      height: this.height - 105,
+    };
   }
 
   /**
@@ -194,8 +276,12 @@ class Player extends MovableObject {
     this.isOnGround = false;
   }
 
+  /**
+   * Returns whether the player is currently allowed to throw a bottle.
+   * @returns {boolean}
+   */
   canThrowBottle() {
-    return true;
+    return !this.isDead;
   }
 
   /**

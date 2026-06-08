@@ -2,6 +2,9 @@
  * Manages sound loading, playback, mute state and persistence.
  */
 class AudioManager {
+  /**
+   * Creates an audio manager and restores the persisted mute state.
+   */
   constructor() {
     this.sounds = {};
     this.muted = localStorage.getItem("muted") === "true";

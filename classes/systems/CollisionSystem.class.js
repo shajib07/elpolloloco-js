@@ -48,6 +48,11 @@ class CollisionSystem {
     );
   }
 
+  /**
+   * Handles one enemy collision against the player's current bounds.
+   * @param {Enemy} enemy - Enemy to test.
+   * @param {{x:number,y:number,width:number,height:number}} playerBounds - Player collision box.
+   */
   handlePlayerEnemyCollision(enemy, playerBounds) {
     if (enemy.isDead) return;
 
@@ -59,6 +64,13 @@ class CollisionSystem {
     this.damagePlayerFromEnemy();
   }
 
+  /**
+   * Tries to resolve a stomp attack against an enemy.
+   * @param {Enemy} enemy - Enemy to test.
+   * @param {{x:number,y:number,width:number,height:number}} playerBounds - Player collision box.
+   * @param {{x:number,y:number,width:number,height:number}} enemyBounds - Enemy collision box.
+   * @returns {boolean} True when the stomp was handled.
+   */
   tryHandleStomp(enemy, playerBounds, enemyBounds) {
     if (!this.canBeStomped(enemy)) return false;
     if (!this.isStompHit(playerBounds, enemyBounds)) return false;
@@ -70,10 +82,18 @@ class CollisionSystem {
     return true;
   }
 
+  /**
+   * Checks whether an enemy can be stomped.
+   * @param {Enemy} enemy - Enemy to inspect.
+   * @returns {boolean}
+   */
   canBeStomped(enemy) {
     return enemy.enemyType === "small" || enemy.enemyType === "normal";
   }
 
+  /**
+   * Applies regular enemy damage to the player.
+   */
   damagePlayerFromEnemy() {
     this.game.player.takeHit(COMBAT.ENEMY_DAMAGE);
     this.game.playSound("PLAYER_HIT");
@@ -95,17 +115,31 @@ class CollisionSystem {
     this.applyBossContactDamage(now);
   }
 
+  /**
+   * Checks whether the boss fight is currently active.
+   * @returns {boolean}
+   */
   shouldCheckBossCollision() {
     return this.game.isBossFightActive && !this.game.endboss.isDead;
   }
 
+  /**
+   * Checks whether the boss damage cooldown is still active.
+   * @param {number} now - Current timestamp in milliseconds.
+   * @returns {boolean}
+   */
   isBossHitOnCooldown(now) {
     return now - this.game.lastBossHitAt < this.game.bossHitCooldownMs;
   }
 
+  /**
+   * Applies contact damage from the boss to the player.
+   * @param {number} now - Current timestamp in milliseconds.
+   */
   applyBossContactDamage(now) {
     this.game.player.takeHit(COMBAT.BOSS_DAMAGE);
     this.game.player.applyKnockback(this.game.endboss.x, this.game.world.width);
+    this.game.endboss.requestAttack(now);
     this.game.playSound("PLAYER_HIT");
     this.game.lastBossHitAt = now;
   }
@@ -132,6 +166,11 @@ class CollisionSystem {
     });
   }
 
+  /**
+   * Checks all collectible collisions against the player.
+   * @param {Array<{isCollected:boolean,getBounds:() => {x:number,y:number,width:number,height:number}}>} items - Collectibles to test.
+   * @param {(item: any) => void} onCollect - Callback invoked when an item is collected.
+   */
   checkCollectibleCollisions(items, onCollect) {
     const playerBounds = this.game.player.getBounds();
     items.forEach((item) => {
@@ -150,12 +189,21 @@ class CollisionSystem {
     );
   }
 
+  /**
+   * Handles collisions for one thrown bottle.
+   * @param {ThrowableBottle} throwable - Active thrown bottle.
+   */
   handleThrowableEnemyCollision(throwable) {
     if (throwable.isFinished) return;
     if (this.tryHitBossWithThrowable(throwable)) return;
     this.tryHitEnemyWithThrowable(throwable);
   }
 
+  /**
+   * Tries to apply thrown-bottle damage to the boss.
+   * @param {ThrowableBottle} throwable - Active thrown bottle.
+   * @returns {boolean} True when the boss was hit.
+   */
   tryHitBossWithThrowable(throwable) {
     if (!this.shouldCheckBossCollision()) return false;
 
@@ -169,6 +217,10 @@ class CollisionSystem {
     return true;
   }
 
+  /**
+   * Applies thrown-bottle damage to the boss.
+   * @param {ThrowableBottle} throwable - Active thrown bottle.
+   */
   applyThrowableHitToBoss(throwable) {
     this.game.endboss.takeHit(COMBAT.BOTTLE_DAMAGE);
     this.game.endboss.applyKnockback(throwable.x, this.game.world.width);
@@ -176,6 +228,10 @@ class CollisionSystem {
     this.game.playSound("BOTTLE_BREAK");
   }
 
+  /**
+   * Tries to apply thrown-bottle damage to a regular enemy.
+   * @param {ThrowableBottle} throwable - Active thrown bottle.
+   */
   tryHitEnemyWithThrowable(throwable) {
     const bottleBounds = throwable.getBounds();
     this.game.enemies.forEach((enemy) => {
@@ -188,6 +244,11 @@ class CollisionSystem {
     });
   }
 
+  /**
+   * Checks whether a thrown bottle can hit the given enemy.
+   * @param {Enemy} enemy - Enemy to inspect.
+   * @returns {boolean}
+   */
   canThrowableHitEnemy(enemy) {
     return !enemy.isDead && enemy.enemyType === "normal";
   }

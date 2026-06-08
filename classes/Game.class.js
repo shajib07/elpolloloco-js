@@ -11,11 +11,18 @@ class Game {
     this.setupCore(canvas, keys, onGameOver);
     this.setupWorldSystems();
     this.setupEntities();
+    this.setupDecorations();
     this.setupCollections();
     this.setupCombatState();
     this.setupAudio();
   }
 
+  /**
+   * Stores core runtime references and creates the player instance.
+   * @param {HTMLCanvasElement} canvas - Main game canvas.
+   * @param {Object.<string, boolean>} keys - Shared keyboard state object.
+   * @param {(result: "win"|"lose") => void} onGameOver - End-of-game callback.
+   */
   setupCore(canvas, keys, onGameOver) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
@@ -27,6 +34,9 @@ class Game {
     this.isGameWon = false;
   }
 
+  /**
+   * Creates the world renderer, HUD and collision system.
+   */
   setupWorldSystems() {
     this.world = new World(this.canvas);
     this.hud = new HUD(this.context, this.canvas);
@@ -35,12 +45,25 @@ class Game {
     this.winScreenImage = ImageManager.load(IMAGE_PATHS.SCREENS.WIN);
   }
 
+  /**
+   * Creates the active enemies and the endboss instance.
+   */
   setupEntities() {
     this.enemies = [new Chicken(620, 360), new ChickenNormal(980, 340)];
     this.endboss = new Endboss(1800, 150);
     this.isBossFightActive = false;
   }
 
+  /**
+   * Creates decorative world objects that move behind the gameplay layer.
+   */
+  setupDecorations() {
+    this.clouds = this.createClouds();
+  }
+
+  /**
+   * Initializes collectible arrays and inventory counters.
+   */
   setupCollections() {
     this.coins = this.createCoins();
     this.collectedCoins = 0;
@@ -51,6 +74,9 @@ class Game {
     this.throwables = [];
   }
 
+  /**
+   * Initializes cooldowns for throwables and boss contact damage.
+   */
   setupCombatState() {
     this.lastThrowAt = 0;
     this.throwCooldownMs = 350;
@@ -58,11 +84,18 @@ class Game {
     this.bossHitCooldownMs = 800;
   }
 
+  /**
+   * Loads the audio manager and default sounds.
+   */
   setupAudio() {
     this.audio = new AudioManager();
     this.audio.loadDefaultGameSounds();
   }
 
+  /**
+   * Creates the coin collectibles for the level.
+   * @returns {Coin[]}
+   */
   createCoins() {
     return [
       new Coin(500, 300),
@@ -73,9 +106,27 @@ class Game {
     ];
   }
 
+  /**
+   * Creates the bottle collectibles for the level.
+   * @returns {Bottle[]}
+   */
   createBottles() {
-    const bottlePositions = [630, 900, 1180, 1460, 1720, 1980];
+    const bottlePositions = [560, 800, 1040, 1280, 1520, 1680];
     return bottlePositions.map((x) => new Bottle(x, 342));
+  }
+
+  /**
+   * Creates several drifting clouds for the sky layer.
+   * @returns {Cloud[]}
+   */
+  createClouds() {
+    return [
+      new Cloud(140, 48, 200, 82, 0.45),
+      new Cloud(520, 84, 170, 70, 0.62),
+      new Cloud(920, 56, 210, 86, 0.38),
+      new Cloud(1440, 72, 190, 78, 0.54),
+      new Cloud(1900, 44, 220, 90, 0.32),
+    ];
   }
 
   /**
@@ -96,6 +147,9 @@ class Game {
     this.animationFrameId = null;
   }
 
+  /**
+   * Advances the game loop by one frame.
+   */
   loop() {
     this.update();
     this.render();
@@ -115,19 +169,36 @@ class Game {
     this.updateGameResultState();
   }
 
+  /**
+   * Updates the player, camera, cloud layer and boss activation state.
+   */
   updateWorldState() {
     this.player.update(this.keys, this.world.width);
     this.world.updateCamera(this.player.x);
+    this.updateCloudsState();
     this.updateBossFightState();
   }
 
+  /**
+   * Updates all regular enemies and the boss when active.
+   */
   updateEnemiesState() {
     this.enemies.forEach((enemy) => enemy.update());
     this.recycleEnemies();
     if (!this.isBossFightActive) return;
-    this.endboss.update(this.player.x);
+    this.endboss.update(this.player.x, this.world.width);
   }
 
+  /**
+   * Updates drifting decorative clouds.
+   */
+  updateCloudsState() {
+    this.clouds.forEach((cloud) => cloud.update(this.world.width));
+  }
+
+  /**
+   * Runs the full collision pass for the current frame.
+   */
   runCollisionChecks() {
     this.collisionSystem.checkPlayerEnemyCollisions();
     this.collisionSystem.checkPlayerBossCollision();
@@ -136,11 +207,17 @@ class Game {
     this.collisionSystem.checkThrowableEnemyCollisions();
   }
 
+  /**
+   * Handles throw input and updates active thrown bottles.
+   */
   updateThrowingState() {
     this.handleThrowInput();
     this.updateThrowables();
   }
 
+  /**
+   * Checks for win and lose conditions after the frame update.
+   */
   updateGameResultState() {
     this.checkGameWin();
     this.checkGameOver();
@@ -155,14 +232,28 @@ class Game {
     this.renderEndOverlay();
   }
 
+  /**
+   * Clears and redraws the world layer.
+   */
   renderWorldScene() {
     this.world.clear();
     this.world.beginRender();
     this.world.drawBackground();
+    this.drawClouds();
     this.drawWorldObjects();
     this.world.endRender();
   }
 
+  /**
+   * Draws the cloud layer behind gameplay objects.
+   */
+  drawClouds() {
+    this.clouds.forEach((cloud) => cloud.draw(this.context));
+  }
+
+  /**
+   * Draws all active gameplay entities in world space.
+   */
   drawWorldObjects() {
     this.player.draw(this.context);
     this.enemies.forEach((enemy) => enemy.draw(this.context));
@@ -172,6 +263,9 @@ class Game {
     this.endboss.draw(this.context);
   }
 
+  /**
+   * Draws the HUD overlay in screen space.
+   */
   renderHud() {
     this.hud.drawEndbossBar(this.isBossFightActive, this.endboss);
     this.hud.drawBottleBar(this.collectedBottles, this.maxBottles);
@@ -179,6 +273,9 @@ class Game {
     this.hud.drawHealthBar(this.player.health);
   }
 
+  /**
+   * Draws the win or lose overlay depending on the game state.
+   */
   renderEndOverlay() {
     if (this.isGameWon) {
       this.drawWinScreen();
@@ -188,6 +285,9 @@ class Game {
     this.drawLoseScreen();
   }
 
+  /**
+   * Recycles enemies once they leave the visible world.
+   */
   recycleEnemies() {
     this.enemies.forEach((enemy) => {
       if (!enemy.isOutOfScreen(this.world.cameraX)) {
@@ -199,14 +299,18 @@ class Game {
     });
   }
 
+  /**
+   * Activates the boss fight once the player reaches the encounter point.
+   */
   updateBossFightState() {
     if (this.isBossFightActive) {
       return;
     }
-    this.isBossFightActive = this.player.x >= this.endboss.canvasActivationX;
-    if (this.isBossFightActive) {
-      this.playSound("BOSS_APPROACH");
-    }
+    if (!this.endboss.isActive(this.player.x)) return;
+
+    this.isBossFightActive = true;
+    this.endboss.activate();
+    this.playSound("BOSS_APPROACH");
   }
 
   /**
@@ -220,6 +324,10 @@ class Game {
     this.triggerGameOverCallback("win");
   }
 
+  /**
+   * Checks whether the endboss defeat condition has been reached.
+   * @returns {boolean}
+   */
   shouldTriggerWin() {
     if (this.isGameWon || this.isGameOver) return false;
     return this.endboss.isDead;
@@ -235,21 +343,35 @@ class Game {
     this.triggerGameOverCallback("lose");
   }
 
+  /**
+   * Checks whether the player has no health left and the death animation finished.
+   * @returns {boolean}
+   */
   shouldTriggerLose() {
     if (this.player.health > 0) return false;
-    return !this.isGameOver;
+    return this.player.isDead && this.player.getCurrentAnimation().isFinished;
   }
 
+  /**
+   * Notifies the caller about the game result if a callback was provided.
+   * @param {"win"|"lose"} result - Final game result.
+   */
   triggerGameOverCallback(result) {
     if (typeof this.onGameOver !== "function") return;
     this.onGameOver(result);
   }
 
+  /**
+   * Draws the lose overlay if the image asset is ready.
+   */
   drawLoseScreen() {
     if (!this.isDrawableImage(this.loseScreenImage)) return;
     this.drawFullScreenImage(this.loseScreenImage);
   }
 
+  /**
+   * @returns {boolean} True when the game is over.
+   */
   isOver() {
     return this.isGameOver;
   }
@@ -277,26 +399,45 @@ class Game {
     return now - this.lastThrowAt >= this.throwCooldownMs;
   }
 
+  /**
+   * Creates a new thrown bottle at the given origin point.
+   * @param {{x:number,y:number,facingLeft:boolean}} origin - Throw origin data.
+   */
   spawnThrowableBottle(origin) {
     const bottle = new ThrowableBottle(origin.x, origin.y, origin.facingLeft);
     this.throwables.push(bottle);
   }
 
+  /**
+   * Advances all active thrown bottles and removes finished ones.
+   */
   updateThrowables() {
     this.throwables.forEach((bottle) => bottle.update(this.world.width));
     this.throwables = this.throwables.filter((bottle) => !bottle.isFinished);
   }
 
+  /**
+   * Draws the win overlay if the image asset is ready.
+   */
   drawWinScreen() {
     if (this.isDrawableImage(this.winScreenImage)) {
       this.drawFullScreenImage(this.winScreenImage);
     }
   }
 
+  /**
+   * Checks whether the given image asset can be rendered.
+   * @param {HTMLImageElement} image - Image to validate.
+   * @returns {boolean}
+   */
   isDrawableImage(image) {
     return image.complete && image.naturalWidth > 0;
   }
 
+  /**
+   * Draws a full-screen overlay image on the canvas.
+   * @param {HTMLImageElement} image - Image to render.
+   */
   drawFullScreenImage(image) {
     this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
   }

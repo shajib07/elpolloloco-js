@@ -142,7 +142,6 @@ class HUD {
     const image = this.coinBarImages[level];
 
     if (image && image.complete && image.naturalWidth > 0) {
-      this.context.drawImage(image, 20, 70, 200, 50);
       const layout = this.layout.coins;
       this.context.drawImage(image, layout.x, layout.y, layout.w, layout.h);
     }

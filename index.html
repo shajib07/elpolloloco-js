@@ -11,7 +11,7 @@
     <main class="landing-page">
       <section class="card">
         <h1>El Pollo Loco</h1>
-        <p class="subtitle">Build your jump-and-run step by step</p>
+        <p class="subtitle">Jump, throw, and survive the desert showdown.</p>
 
         <div class="actions">
           <button id="startButton">Start Game</button>
@@ -35,8 +35,46 @@
           </div>
         </div>
         <canvas id="gameCanvas" width="720" height="480"></canvas>
+        <div class="touch-controls" aria-label="Mobile touch controls">
+          <button
+            type="button"
+            class="touch-control"
+            data-control-key="ArrowLeft"
+            aria-label="Move left"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            class="touch-control"
+            data-control-key="ArrowRight"
+            aria-label="Move right"
+          >
+            →
+          </button>
+          <button
+            type="button"
+            class="touch-control"
+            data-control-key="Space"
+            aria-label="Jump"
+          >
+            Jump
+          </button>
+          <button
+            type="button"
+            class="touch-control"
+            data-control-key="KeyD"
+            aria-label="Throw bottle"
+          >
+            Throw
+          </button>
+        </div>
       </div>
     </section>
+
+    <div id="orientationHint" class="orientation-hint" aria-hidden="true">
+      <p>Turn your device to landscape to play El Pollo Loco.</p>
+    </div>
 
     <div id="infoModal" class="modal hidden" aria-hidden="true">
       <div class="modal-content" role="dialog" aria-labelledby="infoTitle">
@@ -78,6 +116,7 @@
     <script src="classes/Coin.class.js"></script>
     <script src="classes/Bottle.class.js"></script>
     <script src="classes/ThrowableBottle.class.js"></script>
+    <script src="classes/Cloud.class.js"></script>
     <script src="classes/Endboss.class.js"></script>
     <script src="classes/World.class.js"></script>
     <script src="classes/ui/HUD.class.js"></script>

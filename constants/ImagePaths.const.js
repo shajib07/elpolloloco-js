@@ -1,26 +1,25 @@
 const IMAGE_PATHS = Object.freeze({
   PLAYER: {
     IDLE: [
-      "assets/img/character/idle-1.png",
-      "assets/img/character/idle-2.png",
-      "assets/img/character/idle-3.png",
+      ...Array.from({ length: 10 }, (_, index) =>
+        `assets/img/character/1_idle/idle/I-${index + 1}.png`,
+      ),
+      ...Array.from({ length: 10 }, (_, index) =>
+        `assets/img/character/1_idle/long_idle/I-${index + 11}.png`,
+      ),
     ],
-    WALK: [
-      "assets/img/character/walk-1.png",
-      "assets/img/character/walk-2.png",
-      "assets/img/character/walk-3.png",
-    ],
-    JUMP: [
-      "assets/img/character/jump-1.png",
-      "assets/img/character/jump-2.png",
-      "assets/img/character/jump-3.png",
-      "assets/img/character/jump-4.png",
-      "assets/img/character/jump-5.png",
-      "assets/img/character/jump-6.png",
-      "assets/img/character/jump-7.png",
-      "assets/img/character/jump-8.png",
-      "assets/img/character/jump-9.png",
-    ],
+    WALK: Array.from({ length: 6 }, (_, index) =>
+      `assets/img/character/2_walk/W-${index + 21}.png`,
+    ),
+    JUMP: Array.from({ length: 9 }, (_, index) =>
+      `assets/img/character/3_jump/J-${index + 31}.png`,
+    ),
+    HURT: Array.from({ length: 3 }, (_, index) =>
+      `assets/img/character/4_hurt/H-${index + 41}.png`,
+    ),
+    DEAD: Array.from({ length: 7 }, (_, index) =>
+      `assets/img/character/5_dead/D-${index + 51}.png`,
+    ),
   },
   ENEMIES: {
     CHICKEN_NORMAL_WALK: [
@@ -35,12 +34,44 @@ const IMAGE_PATHS = Object.freeze({
     ],
     CHICKEN_DEAD: "assets/img/enemies/chicken-dead.png",
     CHICKEN_NORMAL_DEAD: "assets/img/enemies/chicken-normal-dead.png",
-    BOSS_WALK: [
-      "assets/img/boss/walk-1.png",
-      "assets/img/boss/walk-2.png",
-      "assets/img/boss/walk-3.png",
-      "assets/img/boss/walk-4.png",
-    ],
+    BOSS: {
+      WALK: [
+        "assets/img/boss/1_walk/G1.png",
+        "assets/img/boss/1_walk/G2.png",
+        "assets/img/boss/1_walk/G3.png",
+        "assets/img/boss/1_walk/G4.png",
+      ],
+      ALERT: [
+        "assets/img/boss/2_alert/G5.png",
+        "assets/img/boss/2_alert/G6.png",
+        "assets/img/boss/2_alert/G7.png",
+        "assets/img/boss/2_alert/G8.png",
+        "assets/img/boss/2_alert/G9.png",
+        "assets/img/boss/2_alert/G10.png",
+        "assets/img/boss/2_alert/G11.png",
+        "assets/img/boss/2_alert/G12.png",
+      ],
+      ATTACK: [
+        "assets/img/boss/3_attack/G13.png",
+        "assets/img/boss/3_attack/G14.png",
+        "assets/img/boss/3_attack/G15.png",
+        "assets/img/boss/3_attack/G16.png",
+        "assets/img/boss/3_attack/G17.png",
+        "assets/img/boss/3_attack/G18.png",
+        "assets/img/boss/3_attack/G19.png",
+        "assets/img/boss/3_attack/G20.png",
+      ],
+      HURT: [
+        "assets/img/boss/4_hurt/G21.png",
+        "assets/img/boss/4_hurt/G22.png",
+        "assets/img/boss/4_hurt/G23.png",
+      ],
+      DEAD: [
+        "assets/img/boss/5_dead/G24.png",
+        "assets/img/boss/5_dead/G25.png",
+        "assets/img/boss/5_dead/G26.png",
+      ],
+    },
   },
 
   ITEMS: {
