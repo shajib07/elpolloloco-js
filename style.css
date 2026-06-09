@@ -299,15 +299,17 @@ button:active {
 }
 
 .orientation-hint p {
-  width: min(90vw, 360px);
+  width: min(100%, 340px);
   margin: 0;
-  padding: 20px 24px;
+  padding: 16px 18px;
+  box-sizing: border-box;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(255, 209, 102, 0.18), rgba(255, 177, 82, 0.08));
   border: 1px solid rgba(255, 225, 168, 0.24);
   color: #fff4dc;
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   line-height: 1.4;
+  overflow-wrap: anywhere;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
@@ -472,6 +474,11 @@ button:active {
     display: grid;
     bottom: 8px;
     width: min(92vw, 720px, calc((100svh - 100px) * 1.5));
+  }
+
+  .touch-control {
+    padding: 9px 8px;
+    font-size: 0.82rem;
   }
 }
 
