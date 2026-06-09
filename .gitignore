@@ -25,3 +25,6 @@ coverage/
 .idea/
 *.swp
 *.swo
+
+# Claude Code
+.claude/

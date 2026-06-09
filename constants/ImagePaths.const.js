@@ -82,6 +82,7 @@ const IMAGE_PATHS = Object.freeze({
 
   WORLD: {
     BACKGROUND: "assets/img/background/desert.png",
+    CLOUDS: "assets/img/background/clouds.png",
   },
 
   SCREENS: {
