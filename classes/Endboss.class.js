@@ -19,10 +19,10 @@ class Endboss extends Enemy {
    * Configures movement speed and the boss fight activation point.
    */
   setupMovement() {
-    this.speed = 2.5;
+    this.speed = 2.8;
     this.activationX = WORLD_CONFIG.WIDTH - 960;
-    this.attackRange = 150;
-    this.chaseStopDistance = 20;
+    this.attackRange = 190;
+    this.chaseStopDistance = 70;
   }
 
   /**
@@ -260,10 +260,10 @@ class Endboss extends Enemy {
    */
   getBounds() {
     return {
-      x: this.x + 16,
-      y: this.y + 49,
-      width: this.width - 23,
-      height: this.height - 71,
+      x: this.x + 4,
+      y: this.y + 40,
+      width: this.width - 12,
+      height: this.height - 58,
     };
   }
 

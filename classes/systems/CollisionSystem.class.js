@@ -33,9 +33,13 @@ class CollisionSystem {
   isStompHit(playerBounds, enemyBounds) {
     const playerBottom = playerBounds.y + playerBounds.height;
     const enemyTop = enemyBounds.y;
-    const stompWindow = 18;
+    const stompDepth = enemyBounds.height * 0.62;
+    const horizontalOverlap = Math.min(
+      playerBounds.x + playerBounds.width,
+      enemyBounds.x + enemyBounds.width,
+    ) - Math.max(playerBounds.x, enemyBounds.x);
 
-    return playerBottom <= enemyTop + stompWindow;
+    return horizontalOverlap > 8 && playerBottom <= enemyTop + stompDepth;
   }
 
   /**
@@ -138,7 +142,7 @@ class CollisionSystem {
    */
   applyBossContactDamage(now) {
     this.game.player.takeHit(COMBAT.BOSS_DAMAGE);
-    this.game.player.applyKnockback(this.game.endboss.x, this.game.world.width);
+    this.game.player.applyKnockback(this.game.endboss.x, this.game.world.width, 90);
     this.game.endboss.requestAttack(now);
     this.game.playSound("PLAYER_HIT");
     this.game.lastBossHitAt = now;

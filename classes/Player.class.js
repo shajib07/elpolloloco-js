@@ -25,8 +25,8 @@ class Player extends MovableObject {
     this.deadFrames = ImageManager.loadMany(IMAGE_PATHS.PLAYER.DEAD);
     this.idleAnimation = new SpriteAnimation(this.idleFrames, 12);
     this.walkAnimation = new SpriteAnimation(this.walkFrames, 8);
-    this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 8);
-    this.hurtAnimation = new SpriteAnimation(this.hurtFrames, 6, false);
+    this.jumpAnimation = new SpriteAnimation(this.jumpFrames, 10);
+    this.hurtAnimation = new SpriteAnimation(this.hurtFrames, 12, false);
     this.deadAnimation = new SpriteAnimation(this.deadFrames, 10, false);
   }
 
@@ -37,8 +37,8 @@ class Player extends MovableObject {
     this.floorY = 420;
     this.groundY = this.floorY - this.height;
     this.velocityY = 0;
-    this.gravity = 0.8;
-    this.jumpStrength = -14;
+    this.gravity = 0.55;
+    this.jumpStrength = -11.8;
     this.isOnGround = true;
   }
 
@@ -49,7 +49,7 @@ class Player extends MovableObject {
     this.maxHealth = 100;
     this.health = 100;
     this.lastHitAt = 0;
-    this.hitCooldownMs = 800;
+    this.hitCooldownMs = 1100;
     this.isDead = false;
   }
 
@@ -254,10 +254,10 @@ class Player extends MovableObject {
    */
   getBounds() {
     return {
-      x: this.x + 21,
-      y: this.y + 105,
-      width: this.width - 42,
-      height: this.height - 105,
+      x: this.x + 24,
+      y: this.y + 100,
+      width: this.width - 48,
+      height: this.height - 100,
     };
   }
 
@@ -300,14 +300,13 @@ class Player extends MovableObject {
    * Pushes player away from hit source and clamps to world bounds.
    * @param {number} fromX - X position of hit source.
    * @param {number} worldWidth - Horizontal world boundary.
+   * @param {number} [distance=30] - Horizontal knockback distance.
    */
-  applyKnockback(fromX, worldWidth) {
-    const knockbackDistance = 30;
-
+  applyKnockback(fromX, worldWidth, distance = 30) {
     if (this.x < fromX) {
-      this.x -= knockbackDistance;
+      this.x -= distance;
     } else {
-      this.x += knockbackDistance;
+      this.x += distance;
     }
 
     const maxX = worldWidth - this.width;

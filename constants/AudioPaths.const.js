@@ -28,5 +28,6 @@ const AUDIO_PATHS = Object.freeze({
   GAME: {
     START: "assets/audio/game/gameStart.mp3",
     WIN: "assets/audio/game/gameWin.mp3",
+    BACKGROUND: "assets/audio/character/characterRun.mp3",
   }
 });

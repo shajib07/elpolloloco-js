@@ -81,7 +81,7 @@ class Game {
     this.lastThrowAt = 0;
     this.throwCooldownMs = 350;
     this.lastBossHitAt = 0;
-    this.bossHitCooldownMs = 800;
+    this.bossHitCooldownMs = 650;
   }
 
   /**
@@ -121,11 +121,11 @@ class Game {
    */
   createClouds() {
     return [
-      new Cloud(140, 30, 150, 108, 0.45),
-      new Cloud(520, 60, 128, 92, 0.62),
-      new Cloud(920, 38, 168, 120, 0.38),
-      new Cloud(1440, 64, 140, 100, 0.54),
-      new Cloud(1900, 26, 180, 128, 0.32),
+      new Cloud(80, 112, 390, 112, 0.32, "tall"),
+      new Cloud(560, 64, 270, 78, 0.44, "small"),
+      new Cloud(1120, 38, 480, 132, 0.24, "wide"),
+      new Cloud(1760, 104, 390, 110, 0.36, "tall"),
+      new Cloud(2220, 58, 300, 84, 0.3, "small"),
     ];
   }
 
@@ -135,6 +135,7 @@ class Game {
   start() {
     if (this.animationFrameId !== null) return;
     this.playSound("GAME_START");
+    this.audio.loop("BACKGROUND");
     this.loop();
   }
 
@@ -145,6 +146,7 @@ class Game {
     if (this.animationFrameId === null) return;
     cancelAnimationFrame(this.animationFrameId);
     this.animationFrameId = null;
+    this.audio.stop("BACKGROUND");
   }
 
   /**

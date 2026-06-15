@@ -7,6 +7,7 @@ class AudioManager {
    */
   constructor() {
     this.sounds = {};
+    this.loopingSounds = new Set();
     this.muted = localStorage.getItem("muted") === "true";
   }
 
@@ -39,6 +40,7 @@ class AudioManager {
     return [
       { name: "GAME_START", path: AUDIO_PATHS.GAME.START, volume: 0.5 },
       { name: "GAME_WIN", path: AUDIO_PATHS.GAME.WIN, volume: 0.5 },
+      { name: "BACKGROUND", path: AUDIO_PATHS.GAME.BACKGROUND, volume: 0.08 },
       { name: "JUMP", path: AUDIO_PATHS.PLAYER.JUMP, volume: 0.5 },
       { name: "PLAYER_HIT", path: AUDIO_PATHS.PLAYER.DAMAGE, volume: 0.5 },
       { name: "PLAYER_DEAD", path: AUDIO_PATHS.PLAYER.DEAD, volume: 0.6 },
@@ -68,11 +70,12 @@ class AudioManager {
    * @param {string} name - Sound identifier.
    */
   loop(name) {
-    if (this.muted) return;
     const sound = this.sounds[name];
     if (!sound) return;
 
     sound.loop = true;
+    this.loopingSounds.add(name);
+    if (this.muted) return;
     sound.play().catch(() => {});
   }
 
@@ -86,6 +89,7 @@ class AudioManager {
 
     sound.pause();
     sound.currentTime = 0;
+    this.loopingSounds.delete(name);
   }
 
   /**
@@ -101,7 +105,14 @@ class AudioManager {
         sound.pause();
         sound.currentTime = 0;
       });
+      return;
     }
+
+    this.loopingSounds.forEach((name) => {
+      const sound = this.sounds[name];
+      if (!sound) return;
+      sound.play().catch(() => {});
+    });
   }
 
   /**

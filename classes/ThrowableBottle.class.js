@@ -10,7 +10,13 @@ class ThrowableBottle extends MovableObject {
   constructor(x, y, facingLeft) {
     super(x, y, 48, 48);
     this.facingLeft = facingLeft;
-    this.speed = 8;
+    this.speed = 7.8;
+    this.velocityX = this.facingLeft ? -this.speed : this.speed;
+    this.velocityY = -6.8;
+    this.gravity = 0.32;
+    this.rotation = 0;
+    this.rotationSpeed = this.facingLeft ? -0.24 : 0.24;
+    this.floorY = 420;
     this.isFinished = false;
     this.image = ImageManager.load(IMAGE_PATHS.ITEMS.BOTTLE_THROW);
   }
@@ -20,8 +26,15 @@ class ThrowableBottle extends MovableObject {
    * @param {number} worldWidth - Horizontal world boundary.
    */
   update(worldWidth) {
-    this.x += this.facingLeft ? -this.speed : this.speed;
-    if (this.x + this.width < 0 || this.x > worldWidth) {
+    this.x += this.velocityX;
+    this.y += this.velocityY;
+    this.velocityY += this.gravity;
+    this.rotation += this.rotationSpeed;
+
+    const isOutOfWorld = this.x + this.width < 0 || this.x > worldWidth;
+    const hasHitGround = this.y + this.height >= this.floorY;
+
+    if (isOutOfWorld || hasHitGround) {
       this.isFinished = true;
     }
   }
@@ -35,9 +48,19 @@ class ThrowableBottle extends MovableObject {
       return;
     }
 
-    if (this.isImageReady(this.image)) {
-      context.drawImage(this.image, this.x, this.y, this.width, this.height);
-    }
+    if (!this.isImageReady(this.image)) return;
+
+    context.save();
+    context.translate(this.x + this.width / 2, this.y + this.height / 2);
+    context.rotate(this.rotation);
+    context.drawImage(
+      this.image,
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height,
+    );
+    context.restore();
   }
 
   /**

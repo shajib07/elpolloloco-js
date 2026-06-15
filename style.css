@@ -482,6 +482,17 @@ button:active {
   }
 }
 
+@media (min-width: 1101px) and (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  .touch-controls {
+    display: grid;
+    bottom: 12px;
+  }
+
+  .touch-control {
+    padding: 11px 8px;
+  }
+}
+
 @media (max-width: 1100px) and (orientation: portrait) {
   .landing-page,
   .game-screen,

@@ -1,25 +1,22 @@
 /**
- * Represents a decorative cloud that drifts across the desert sky.
+ * Represents a soft, background-style cloud drifting across the desert sky.
  */
 class Cloud extends DrawableObject {
-  /** Cached, background-removed cloud sprite shared by every instance. */
-  static sprite = null;
-  /** True once sprite generation failed, so we fall back to procedural clouds. */
-  static spriteFailed = false;
-
   /**
    * @param {number} x - Initial x position.
    * @param {number} y - Initial y position.
    * @param {number} width - Cloud width in pixels.
    * @param {number} height - Cloud height in pixels.
    * @param {number} speed - Horizontal drift speed per frame.
+   * @param {"wide"|"tall"|"small"} variant - Shape variant based on the reference background.
    */
-  constructor(x, y, width = 180, height = 120, speed = 0.18) {
+  constructor(x, y, width = 220, height = 90, speed = 0.18, variant = "wide") {
     super(x, y, width, height);
 
+    this.height = Math.max(this.height, this.width / 4.2);
     this.speed = speed;
     this.baseY = y;
-    this.image = ImageManager.load(IMAGE_PATHS.WORLD.CLOUDS);
+    this.variant = variant;
   }
 
   /**
@@ -38,224 +35,97 @@ class Cloud extends DrawableObject {
   }
 
   /**
-   * Draws the cloud, preferring the clouds.png sprite and falling back to a
-   * procedural cloud while the image loads or if it cannot be processed.
+   * Draws the cloud using the soft translucent style from the desert background.
    * @param {CanvasRenderingContext2D} context - Canvas 2D context.
    */
   draw(context) {
-    const sprite = Cloud.getSprite(this.image);
+    context.save();
+    context.globalAlpha = 0.82;
+    this.createCloudPath(context);
+    context.fillStyle = this.createCloudGradient(context);
+    context.fill();
+    context.restore();
+  }
 
-    if (sprite) {
-      this.drawSprite(context, sprite);
+  /**
+   * Creates the cloud fill gradient.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   * @returns {CanvasGradient}
+   */
+  createCloudGradient(context) {
+    const gradient = context.createLinearGradient(0, this.y, 0, this.y + this.height);
+    gradient.addColorStop(0, "rgba(255, 255, 255, 0.92)");
+    gradient.addColorStop(0.58, "rgba(219, 238, 244, 0.72)");
+    gradient.addColorStop(1, "rgba(89, 180, 207, 0.25)");
+    return gradient;
+  }
+
+  /**
+   * Selects the path that matches this cloud's variant.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   */
+  createCloudPath(context) {
+    if (this.variant === "tall") {
+      this.createTallCloudPath(context);
       return;
     }
 
-    this.drawProcedural(context);
-  }
-
-  /**
-   * Draws the cut-out cloud sprite at the cloud's current position.
-   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
-   * @param {HTMLCanvasElement} sprite - Background-removed cloud sprite.
-   */
-  drawSprite(context, sprite) {
-    context.save();
-    context.globalAlpha = 0.92;
-    context.drawImage(sprite, this.x, this.y, this.width, this.height);
-    context.restore();
-  }
-
-  /**
-   * Returns the shared cloud sprite, building it once the source image loads.
-   * @param {HTMLImageElement} image - Source clouds image.
-   * @returns {HTMLCanvasElement|null} Cut-out sprite, or null while unavailable.
-   */
-  static getSprite(image) {
-    if (Cloud.sprite) {
-      return Cloud.sprite;
-    }
-    if (Cloud.spriteFailed || !this.prototype.isImageReady(image)) {
-      return null;
+    if (this.variant === "small") {
+      this.createSmallCloudPath(context);
+      return;
     }
 
-    Cloud.sprite = Cloud.buildSprite(image);
-    return Cloud.sprite;
+    this.createWideCloudPath(context);
   }
 
   /**
-   * Builds a transparent cloud sprite by flood-filling the near-white sky
-   * background away from the image borders (the cloud's dark outline blocks
-   * the fill, so the white cloud body is preserved), then cropping to content.
-   * @param {HTMLImageElement} image - Loaded clouds image.
-   * @returns {HTMLCanvasElement|null} Cropped, cut-out sprite or null on failure.
-   */
-  static buildSprite(image) {
-    try {
-      const source = Cloud.createCanvas(image.naturalWidth, image.naturalHeight);
-      const sourceContext = source.getContext("2d");
-      sourceContext.drawImage(image, 0, 0);
-      const imageData = sourceContext.getImageData(0, 0, source.width, source.height);
-      const bounds = Cloud.removeBackground(imageData);
-      sourceContext.putImageData(imageData, 0, 0);
-      return Cloud.cropCanvas(source, bounds);
-    } catch {
-      Cloud.spriteFailed = true;
-      return null;
-    }
-  }
-
-  /**
-   * Flood-fills the connected near-white background from the borders, making it
-   * transparent, and returns the bounding box of the remaining cloud pixels.
-   * @param {ImageData} imageData - Pixel buffer to modify in place.
-   * @returns {{minX:number,minY:number,maxX:number,maxY:number,found:boolean}}
-   */
-  static removeBackground(imageData) {
-    const { data, width, height } = imageData;
-    const visited = new Uint8Array(width * height);
-    const stack = [];
-    const seed = (x, y) => {
-      if (x < 0 || y < 0 || x >= width || y >= height) return;
-      const pixel = y * width + x;
-      if (visited[pixel] || !Cloud.isBackgroundPixel(data, pixel * 4)) return;
-      visited[pixel] = 1;
-      stack.push(pixel);
-    };
-
-    for (let x = 0; x < width; x += 1) {
-      seed(x, 0);
-      seed(x, height - 1);
-    }
-    for (let y = 0; y < height; y += 1) {
-      seed(0, y);
-      seed(width - 1, y);
-    }
-
-    while (stack.length) {
-      const pixel = stack.pop();
-      data[pixel * 4 + 3] = 0;
-      const x = pixel % width;
-      const y = (pixel / width) | 0;
-      seed(x - 1, y);
-      seed(x + 1, y);
-      seed(x, y - 1);
-      seed(x, y + 1);
-    }
-
-    return Cloud.measureOpaqueBounds(imageData);
-  }
-
-  /**
-   * Whether a pixel looks like the bright, near-neutral sky background.
-   * @param {Uint8ClampedArray} data - RGBA pixel buffer.
-   * @param {number} index - Byte offset of the pixel's red channel.
-   * @returns {boolean}
-   */
-  static isBackgroundPixel(data, index) {
-    const r = data[index];
-    const g = data[index + 1];
-    const b = data[index + 2];
-    const brightness = (r + g + b) / 3;
-    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
-    return brightness > 200 && saturation < 45;
-  }
-
-  /**
-   * Computes the bounding box of pixels that are still visible.
-   * @param {ImageData} imageData - Pixel buffer to scan.
-   * @returns {{minX:number,minY:number,maxX:number,maxY:number,found:boolean}}
-   */
-  static measureOpaqueBounds(imageData) {
-    const { data, width, height } = imageData;
-    const bounds = { minX: width, minY: height, maxX: 0, maxY: 0, found: false };
-
-    for (let y = 0; y < height; y += 1) {
-      for (let x = 0; x < width; x += 1) {
-        if (data[(y * width + x) * 4 + 3] <= 10) continue;
-        bounds.found = true;
-        bounds.minX = Math.min(bounds.minX, x);
-        bounds.maxX = Math.max(bounds.maxX, x);
-        bounds.minY = Math.min(bounds.minY, y);
-        bounds.maxY = Math.max(bounds.maxY, y);
-      }
-    }
-
-    return bounds;
-  }
-
-  /**
-   * Crops a canvas to the supplied bounds, returning the source if empty.
-   * @param {HTMLCanvasElement} source - Canvas to crop.
-   * @param {{minX:number,minY:number,maxX:number,maxY:number,found:boolean}} bounds - Crop region.
-   * @returns {HTMLCanvasElement} Cropped cloud canvas.
-   */
-  static cropCanvas(source, bounds) {
-    if (!bounds.found) {
-      return source;
-    }
-
-    const width = bounds.maxX - bounds.minX + 1;
-    const height = bounds.maxY - bounds.minY + 1;
-    const cropped = Cloud.createCanvas(width, height);
-    cropped
-      .getContext("2d")
-      .drawImage(source, bounds.minX, bounds.minY, width, height, 0, 0, width, height);
-    return cropped;
-  }
-
-  /**
-   * Creates an offscreen canvas of the given size.
-   * @param {number} width - Canvas width.
-   * @param {number} height - Canvas height.
-   * @returns {HTMLCanvasElement}
-   */
-  static createCanvas(width, height) {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    return canvas;
-  }
-
-  /**
-   * Draws a soft cloud made of overlapping circles (fallback rendering).
+   * Draws a wide cloud with a large center dome.
    * @param {CanvasRenderingContext2D} context - Canvas 2D context.
    */
-  drawProcedural(context) {
-    context.save();
-    context.globalAlpha = 0.9;
-    context.fillStyle = "#f7fbff";
-    context.shadowColor = "rgba(255, 255, 255, 0.25)";
-    context.shadowBlur = 10;
+  createWideCloudPath(context) {
+    const { x, y, width: w, height: h } = this;
+
     context.beginPath();
-    context.arc(
-      this.x + this.width * 0.24,
-      this.y + this.height * 0.55,
-      this.height * 0.24,
-      0,
-      Math.PI * 2,
-    );
-    context.arc(
-      this.x + this.width * 0.44,
-      this.y + this.height * 0.34,
-      this.height * 0.3,
-      0,
-      Math.PI * 2,
-    );
-    context.arc(
-      this.x + this.width * 0.67,
-      this.y + this.height * 0.5,
-      this.height * 0.25,
-      0,
-      Math.PI * 2,
-    );
-    context.arc(
-      this.x + this.width * 0.84,
-      this.y + this.height * 0.62,
-      this.height * 0.17,
-      0,
-      Math.PI * 2,
-    );
-    context.fill();
-    context.restore();
+    context.moveTo(x + w * 0.02, y + h * 0.84);
+    context.quadraticCurveTo(x + w * 0.13, y + h * 0.58, x + w * 0.30, y + h * 0.62);
+    context.bezierCurveTo(x + w * 0.25, y + h * 0.30, x + w * 0.38, y + h * 0.08, x + w * 0.56, y + h * 0.12);
+    context.bezierCurveTo(x + w * 0.70, y + h * 0.13, x + w * 0.78, y + h * 0.31, x + w * 0.76, y + h * 0.48);
+    context.bezierCurveTo(x + w * 0.88, y + h * 0.31, x + w * 1.00, y + h * 0.49, x + w * 0.98, y + h * 0.74);
+    context.quadraticCurveTo(x + w * 0.72, y + h * 0.86, x + w * 0.02, y + h * 0.84);
+    context.closePath();
+  }
+
+  /**
+   * Draws a taller cloud like the large left reference cloud.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   */
+  createTallCloudPath(context) {
+    const { x, y, width: w, height: h } = this;
+
+    context.beginPath();
+    context.moveTo(x, y + h * 0.88);
+    context.quadraticCurveTo(x + w * 0.10, y + h * 0.62, x + w * 0.26, y + h * 0.66);
+    context.bezierCurveTo(x + w * 0.18, y + h * 0.32, x + w * 0.35, y + h * 0.08, x + w * 0.54, y + h * 0.16);
+    context.bezierCurveTo(x + w * 0.72, y + h * 0.24, x + w * 0.75, y + h * 0.50, x + w * 0.68, y + h * 0.66);
+    context.bezierCurveTo(x + w * 0.82, y + h * 0.56, x + w * 0.95, y + h * 0.66, x + w, y + h * 0.88);
+    context.lineTo(x, y + h * 0.88);
+    context.closePath();
+  }
+
+  /**
+   * Draws a compact cloud with a small leading puff.
+   * @param {CanvasRenderingContext2D} context - Canvas 2D context.
+   */
+  createSmallCloudPath(context) {
+    const { x, y, width: w, height: h } = this;
+
+    context.beginPath();
+    context.moveTo(x + w * 0.02, y + h * 0.84);
+    context.quadraticCurveTo(x + w * 0.10, y + h * 0.70, x + w * 0.22, y + h * 0.72);
+    context.bezierCurveTo(x + w * 0.20, y + h * 0.46, x + w * 0.38, y + h * 0.38, x + w * 0.48, y + h * 0.54);
+    context.bezierCurveTo(x + w * 0.45, y + h * 0.16, x + w * 0.74, y + h * 0.12, x + w * 0.72, y + h * 0.58);
+    context.bezierCurveTo(x + w * 0.86, y + h * 0.48, x + w * 0.96, y + h * 0.62, x + w * 0.98, y + h * 0.84);
+    context.quadraticCurveTo(x + w * 0.64, y + h * 0.88, x + w * 0.02, y + h * 0.84);
+    context.closePath();
   }
 }
