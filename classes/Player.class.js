@@ -36,9 +36,14 @@ class Player extends MovableObject {
   setupPhysics() {
     this.floorY = 420;
     this.groundY = this.floorY - this.height;
+    this.velocityX = 0;
     this.velocityY = 0;
     this.gravity = 0.55;
     this.jumpStrength = -11.8;
+    this.jumpArcBoost = 2.2;
+    this.airAcceleration = 0.28;
+    this.airFriction = 0.94;
+    this.maxAirSpeed = 4.2;
     this.isOnGround = true;
   }
 
@@ -100,6 +105,8 @@ class Player extends MovableObject {
    */
   handleJumpInput(keys) {
     if (!keys.Space || !this.isOnGround) return;
+    const jumpDirection = this.getJumpDirection(keys);
+    this.velocityX = jumpDirection * this.jumpArcBoost;
     this.velocityY = this.jumpStrength;
     this.isOnGround = false;
     if (!window.currentGameInstance) return;
@@ -107,10 +114,34 @@ class Player extends MovableObject {
   }
 
   /**
+   * Returns the horizontal direction used for the initial jump arc.
+   * @param {Object.<string, boolean>} keys - Current keyboard state.
+   * @returns {number} -1 for left, 1 for right.
+   */
+  getJumpDirection(keys) {
+    if (keys.ArrowLeft && !keys.ArrowRight) {
+      return -1;
+    }
+
+    if (keys.ArrowRight && !keys.ArrowLeft) {
+      return 1;
+    }
+
+    return this.facingLeft ? -1 : 1;
+  }
+
+  /**
    * Moves the player left or right based on the pressed arrow keys.
    * @param {Object.<string, boolean>} keys - Current keyboard state.
    */
   handleHorizontalMovement(keys) {
+    if (!this.isOnGround) {
+      this.handleAirMovement(keys);
+      return;
+    }
+
+    this.velocityX = 0;
+
     if (keys.ArrowLeft) {
       this.x -= this.speed;
       this.facingLeft = true;
@@ -118,6 +149,32 @@ class Player extends MovableObject {
     if (!keys.ArrowRight) return;
     this.x += this.speed;
     this.facingLeft = false;
+  }
+
+  /**
+   * Applies lighter horizontal control while the player is airborne.
+   * @param {Object.<string, boolean>} keys - Current keyboard state.
+   */
+  handleAirMovement(keys) {
+    if (keys.ArrowLeft) {
+      this.velocityX -= this.airAcceleration;
+      this.facingLeft = true;
+    }
+
+    if (keys.ArrowRight) {
+      this.velocityX += this.airAcceleration;
+      this.facingLeft = false;
+    }
+
+    if (!keys.ArrowLeft && !keys.ArrowRight) {
+      this.velocityX *= this.airFriction;
+    }
+
+    this.velocityX = Math.max(
+      -this.maxAirSpeed,
+      Math.min(this.velocityX, this.maxAirSpeed),
+    );
+    this.x += this.velocityX;
   }
 
   /**
@@ -138,6 +195,7 @@ class Player extends MovableObject {
 
     if (this.y >= this.groundY) {
       this.y = this.groundY;
+      this.velocityX = 0;
       this.velocityY = 0;
       this.isOnGround = true;
     }
@@ -238,6 +296,7 @@ class Player extends MovableObject {
 
     if (this.health === 0) {
       this.isDead = true;
+      this.velocityX = 0;
       this.velocityY = 0;
       this.isOnGround = true;
       this.y = this.groundY;
